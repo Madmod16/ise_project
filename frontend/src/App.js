@@ -20,6 +20,9 @@ function App() {
           <div className="id">
             {value.MemberID}
           </div>
+          <div className="id">
+            {value.MemberName}
+          </div>
         </div>
       })
      }
