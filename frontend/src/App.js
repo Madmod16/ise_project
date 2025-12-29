@@ -1,32 +1,20 @@
 import logo from './logo.svg';
 import './App.css';
+import Select from 'react-select';
 import axios from 'axios'
 import { useEffect, useState } from 'react';
+import SelectTheUser from './SelectTheUser';
+import CoursesList from './CoursesList';
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
 
 function App() {
-  const [listOfMembers, setListOfMembers] = useState([]);
-
-  useEffect(() =>{
-    axios.get("http://localhost:3001/member").then((resp)=>{
-      setListOfMembers(resp.data)
-    })
-  }, [])
-
   return (
-    <div className="App">
-     {
-      listOfMembers.map((value, key) => {
-        return <div className="member">
-          <div className="id">
-            {value.MemberID}
-          </div>
-          <div className="id">
-            {value.MemberName}
-          </div>
-        </div>
-      })
-     }
-    </div>
+    <BrowserRouter>
+        <Routes>
+          <Route path="/SelectTheUser" element={<SelectTheUser />} />
+          <Route path="/CoursesList" element={<CoursesList />} />
+        </Routes>
+    </BrowserRouter>  
   );
 }
 

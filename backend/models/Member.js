@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {
-          min: 18, // MemberAge > 17
+          min: 18, 
         },
       },
     },

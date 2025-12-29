@@ -1,17 +1,8 @@
-const express = require("express");
-const router = express.Router()
-const { Member } = require('../models')
+const express = require('express');
+const router = express.Router();
+const {getMembers, getUserById} = require('../controllers/userController');
 
-router.get("/", async (req, res) =>{
-    const listOfPosts = await Member.findAll()
-    res.send(listOfPosts)
-})
+router.get('/members', getMembers);
+router.get('/:id', getUserById);
 
-router.post("/", async (req, res) =>{
-    const member = req.body
-    await Member.create(member)
-    res.send(member)
-})
-
-
-module.exports = router
+module.exports = router;
