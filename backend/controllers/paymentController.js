@@ -12,8 +12,8 @@ const addPayment = async (req, res) => {
         const newPayment = await Payment.create({
             EnrollmentID: EnrollmentID,
             PayDate: new Date(),
-            TotalAmount: (Type == "student") ? Price - (Price * discount) : Price,
-            Discount : discount
+            TotalAmount: (Type === "student") ? Price - (Price * discount) : Price,
+            Discount : (Type === "student") ? discount : 0
         });
 
         res.status(201).json({ 

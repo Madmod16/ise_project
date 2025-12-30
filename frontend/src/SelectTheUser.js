@@ -1,15 +1,12 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './SelectTheUser.css';
-
+import './SelectTheUser.css'
 
 function SelectTheUser() {
   const [listOfMembers, setListOfMembers] = useState([]);
-  const [listOfPayment, setlistOfPayment] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
-  const [listOfEnrollments, setlistOfEnrollments] = useState([]);
   const navigate = useNavigate();
 
   const handleProceed = () => {

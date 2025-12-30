@@ -1,11 +1,14 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import './CoursesList.css'
 
 function CoursesList() {
   const [listOfPrograms, setlistOfProgram] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedProgram, setSelectedProgram] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const selectedMember = location.state?.selectedMember;
 
   useEffect(() =>{
@@ -13,6 +16,12 @@ function CoursesList() {
       setlistOfProgram(resp.data)
     })
   }, [])
+
+  const handleProceed = () => {
+    navigate('/AnalyticsReportStudent1', { 
+      state: { ProgramID: selectedProgram.ProgramID} 
+    });
+  };
 
   const handleButton = async (member, course) =>{
     try {
@@ -24,9 +33,6 @@ function CoursesList() {
       )
       console.log("Enrollment created:", responseEnrollment.data)
       const enrollmentId = await responseEnrollment.data.enrollment.EnrollmentID;
-      console.log(enrollmentId)
-      console.log(member.type)
-      console.log(course.Price)
       const responsePayment = await axios.post("http://localhost:3001/payment",
           {
             EnrollmentID : enrollmentId,
@@ -34,7 +40,7 @@ function CoursesList() {
             Price : course.Price
           }
       )
-      console.log("Enrollment created:", responsePayment.data)
+      console.log("Payment created:", responsePayment.data)
     } catch (error) {
       console.error("Enrollment failed:", error)
     }
@@ -43,43 +49,75 @@ function CoursesList() {
   const handleCourseSelection = (course) => {
     setSelectedOption(course);
   };
-  
+
+  const handleProgramSelection = (program) => {
+    setSelectedProgram(program);
+  };
 
   return ( 
-  <div>
-      <h3> {selectedMember.MemberSurname + " " + selectedMember.MemberName} </h3>
-      <h2> Programs </h2>
-      <div classProgram="program-grid">
-        {listOfPrograms.map((program) => (
-          <div
-            key={program.ProgramID}
-          >
-            <h3>{program.ProgramName}</h3>
-            <p>Duration: {program.Duration}</p>
-            <div classProgram="course-grid">
-              {program.Courses.map((courses) => (
-              <div
-                key={courses.CourseID}
-                onClick={() => handleCourseSelection(courses)}
-              >
-                <h4>{courses.CourseName}</h4>
-                <p>Field: {courses.Field}</p>
-                <p>Price: {courses.Price}</p>
-             </div>
-            ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      {selectedOption && selectedMember && (
-        <div className="selection-info-course">
-          <p>Selected Course: {selectedOption.CourseName}</p>
-          <button onClick={() => handleButton(selectedMember, selectedOption)}>
-            Continue
-          </button>
-        </div>
-      )}
+  <div className="member-selection-container">
+  <div className="member-header">
+    <h3>{selectedMember.MemberSurname} {selectedMember.MemberName}</h3>
   </div>
+
+  <h2 className="section-title">Programs</h2>
+  
+  <div className="program-grid">
+    {listOfPrograms.map((program) => (
+      <div
+        key={program.ProgramID}
+        className={`program-card ${selectedProgram?.ProgramID === program.ProgramID ? 'selected' : ''}`}
+        onClick={() => handleProgramSelection(program)}
+      >
+        <div className="program-header">
+          <h3>{program.ProgramName}</h3>
+          <span className="duration-badge">Duration: {program.Duration}</span>
+        </div>
+
+        <div className="course-grid">
+          {program.Courses.map((course) => (
+            <div
+              key={course.CourseID}
+              className={`course-card ${selectedOption?.CourseID === course.CourseID ? 'selected' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent program selection when clicking course
+                handleCourseSelection(course);
+              }}
+            >
+              <h4>{course.CourseName}</h4>
+              <div className="course-details">
+                <span className="field-tag">{course.Field}</span>
+                <span className="price-tag">${course.Price}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {selectedOption && (
+    <div className="selection-info-course">
+      <div className="selection-content">
+        <p><strong>Selected Course:</strong> {selectedOption.CourseName}</p>
+        <button className="continue-btn" onClick={() => handleButton(selectedMember, selectedOption)}>
+          Continue with Course
+        </button>
+      </div>
+    </div>
+  )}
+
+  {selectedProgram && (
+    <div className="selection-analytics-report">
+      <div className="selection-content">
+        <p><strong>Selected Program:</strong> {selectedProgram.ProgramName}</p>
+        <button className="continue-btn analytics" onClick={handleProceed}>
+          View Analytics Report
+        </button>
+      </div>
+    </div>
+  )}
+</div>
   );
 }
 
