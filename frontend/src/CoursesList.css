@@ -212,7 +212,19 @@
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
-/* Responsive Design */
+.selection-info-course {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+}
+
+.selection-analytics-report {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem; 
+}
+
+
 @media (max-width: 768px) {
   .program-grid {
     grid-template-columns: 1fr;

@@ -26,32 +26,81 @@ function SelectTheUser() {
   };
   
   return ( 
-  <div>
-      <h2>Select a Member</h2>
-      <div className="members-grid">
-        {listOfMembers.map((member) => (
-          <div
-            key={member.MemberID}
-            className={`member-card ${selectedOption === member.MemberID ? 'selected' : ''}`}
-            onClick={() => {handleSelectMember(member.MemberID); setSelectedMember(member);}}
-          >
-            <h3>{member.MemberName} {member.MemberSurname}</h3>
-            <p>Age: {member.MemberAge}</p>
-            <p>ID: {member.MemberID}</p>
-            {member.type && <span className="member-type">{member.type}</span>}
-          </div>
-        ))}
-      </div>
-      
-      {selectedOption && (
-        <div className="selection-info">
-          <p>Selected Member ID: {selectedOption}</p>
-          <button onClick={handleProceed}>
-            Continue
-          </button>
+  <div className="member-selection-container">
+  <h2 className="selection-title">Select a Member</h2>
+  
+  <div className="members-grid">
+    {listOfMembers.map((member) => (
+      <div
+        key={member.MemberID}
+        className={`member-card ${selectedOption === member.MemberID ? 'selected' : ''}`}
+        onClick={() => {
+          handleSelectMember(member.MemberID);
+          setSelectedMember(member);
+        }}
+      >
+        <div className="member-avatar">
+          <span className="avatar-initials">
+            {member.MemberName.charAt(0)}{member.MemberSurname.charAt(0)}
+          </span>
         </div>
-      )}
+        
+        <div className="member-info">
+          <h3 className="member-name">
+            {member.MemberName} {member.MemberSurname}
+          </h3>
+          <div className="member-details">
+            <span className="detail-item">
+              <svg className="icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" />
+              </svg>
+              Age {member.MemberAge}
+            </span>
+            <span className="detail-item">
+              <svg className="icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" />
+              </svg>
+              ID: {member.MemberID}
+            </span>
+          </div>
+          {member.type && (
+            <span className={`member-type-badge ${member.type.toLowerCase()}`}>
+              {member.type}
+            </span>
+          )}
+        </div>
+        
+        <div className="selection-indicator">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" clipRule="evenodd" />
+          </svg>
+        </div>
+      </div>
+    ))}
+  </div>
+  
+  {selectedOption && (
+    <div className="selection-info">
+      <div className="selection-content">
+        <div className="selection-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" clipRule="evenodd" />
+          </svg>
+        </div>
+        <div className="selection-text">
+          <p className="selection-label">Selected Member</p>
+          <p className="selection-id">ID: {selectedOption}</p>
+        </div>
+        <button className="continue-btn" onClick={handleProceed}>
+          Continue
+          <svg className="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
     </div>
+  )}
+</div>
   );
 }
 
