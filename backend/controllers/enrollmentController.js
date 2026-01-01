@@ -1,4 +1,4 @@
-const { Enrollment, Payment } = require('../models')
+const { Enrollment } = require('../models')
 
 const addEnrollment = async (req, res) => {
     try {
