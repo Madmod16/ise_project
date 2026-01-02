@@ -1,3 +1,4 @@
+/*
 const { Program, Course } = require('../models');
 const { sequelize } = require('../models');
 const { QueryTypes } = require('sequelize');
@@ -8,7 +9,7 @@ const getProgramsWithCourses = async (req, res) => {
       include: [{
         model: Course,
         as: 'Courses',
-        attributes: ['CourseID', 'CourseName', 'Field', 'Price'] 
+        attributes: ['Id', 'Name', 'Field', 'Price']
       }]
     });
     
@@ -20,11 +21,11 @@ const getProgramsWithCourses = async (req, res) => {
 };
 
 const getAnalyticsReport = async (req, res) => {
-    const { ProgramID } = req.body;
+    const { Id } = req.body;
     try {
         const report = await sequelize.query(`
             SELECT
-                p.ProgramID,
+                p.Id,
                 p.ProgramName,
                 st.StudentID,
                 m.MemberID,
@@ -49,7 +50,7 @@ const getAnalyticsReport = async (req, res) => {
                 m.MemberID, m.MemberName, m.MemberSurname
             ORDER BY CoursesInProgram DESC, StudentName;
         `, {
-            replacements: { ProgramID: ProgramID },
+            replacements: { Id: ProgramId },
             type: QueryTypes.SELECT
         });
 
@@ -63,3 +64,5 @@ const getAnalyticsReport = async (req, res) => {
 }
 
 module.exports = { getProgramsWithCourses, getAnalyticsReport };
+
+ */

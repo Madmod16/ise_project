@@ -1,3 +1,4 @@
+/*
 const { Member } = require('../models')
 const { sequelize } = require('../models');
 const { QueryTypes } = require('sequelize');
@@ -52,3 +53,4 @@ const getUserById = async (req, res) => {
 };
 
 module.exports = { getMembers, getUserById }
+ */

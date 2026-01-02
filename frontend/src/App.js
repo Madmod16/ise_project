@@ -1,6 +1,7 @@
 import './App.css';
 import SelectTheUser from './SelectTheUser';
 import CoursesList from './CoursesList';
+import TutorModuleUseCase from './TutorModuleUseCase';
 import AnalyticsReportStudent1 from './AnalyticReportStudent1'
 
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<SelectTheUser />} />
           <Route path="/CoursesList" element={<CoursesList />} />
+            <Route path="/TutorModuleUseCase" element={<TutorModuleUseCase />} />
           <Route path="/AnalyticsReportStudent1" element={<AnalyticsReportStudent1 />} />
         </Routes>
     </BrowserRouter>  

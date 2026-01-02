@@ -1,17 +1,18 @@
-const { Enrollment, Payment } = require('../models')
+/*const { Enrollment, Payment } = require('../models')
 
 const addEnrollment = async (req, res) => {
     try {
-        const { MemberID, CourseID} = req.body;
+        const { MemberId, CourseId} = req.body;
 
-        if (!MemberID || !CourseID) {
-            return res.status(400).json({ error: 'MemberID and CourseID are required' });
+        if (!MemberId || !CourseId) {
+            return res.status(400).json({ error: 'MemberId and CourseId are required' });
         }
         
         const newEnrollment = await Enrollment.create({
-            MemberID: MemberID,
-            CourseID: CourseID,
-            EnrollDate: new Date()
+            MemberId: MemberId,
+            CourseId: CourseId,
+            Date: new Date(),
+            Validity: Boolean
         });
 
         res.status(201).json({ 
@@ -27,4 +28,4 @@ const addEnrollment = async (req, res) => {
     }
 }
 
-module.exports = { addEnrollment }
+module.exports = { addEnrollment }*/

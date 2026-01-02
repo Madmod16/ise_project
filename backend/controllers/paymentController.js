@@ -1,18 +1,19 @@
+/*
 const { Payment } = require('../models')
 
 const addPayment = async (req, res) => {
     try {
-        const { EnrollmentID, Type, Price } = req.body;
+        const { EnrollmentId, Type, Price } = req.body;
         const discount = 0.65
         
-        if (!Type || !EnrollmentID || !Price) {
-            return res.status(400).json({ error: 'Type, EnrollmentID and Price are required'});
+        if (!Type || !EnrollmentId || !Price) {
+            return res.status(400).json({ error: 'Type, EnrollmentId and Price are required'});
         }
         
         const newPayment = await Payment.create({
-            EnrollmentID: EnrollmentID,
+            EnrollmentId: EnrollmentId,
             PayDate: new Date(),
-            TotalAmount: (Type === "student") ? Price - (Price * discount) : Price,
+            Amount: (Type === "student") ? Price - (Price * discount) : Price,
             Discount : (Type === "student") ? discount : 0
         });
 
@@ -30,3 +31,4 @@ const addPayment = async (req, res) => {
 }
 
 module.exports = { addPayment }
+ */
