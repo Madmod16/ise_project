@@ -1,4 +1,4 @@
-const { Member, UniversityStudent, PrivateCustomer, Enrollment, Payment } = require('../models')
+const { Member, UniversityStudent, PrivateCustomer, Enrollment, Payment, Program, Course } = require('../models')
 
 const getCourses = async (req, res) =>{
     const students = await UniversityStudent.findAll({
@@ -8,10 +8,19 @@ const getCourses = async (req, res) =>{
             include : [{
             model: Enrollment,
             required: true,
-                    include : [{
+                include : [{
                     model: Payment,
-                    required: true
-                }]
+                    required: true,
+                },
+                {
+                    model: Course,
+                    required: true,
+                    include : [{
+                        model: Program,
+                        required: true
+                    }]
+                }   
+                ],
             }]
         }]
     })

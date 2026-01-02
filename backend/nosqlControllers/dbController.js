@@ -36,10 +36,19 @@ const migrateMembers = async () =>{
             include : [{
             model: Enrollment,
             required: true,
-                    include : [{
+                include : [{
                     model: Payment,
-                    required: true
-                }]
+                    required: true,
+                },
+                {
+                    model: Course,
+                    required: true,
+                    include : [{
+                        model: Program,
+                        required: true
+                    }]
+                }   
+                ],
             }]
         }]
     })
@@ -53,25 +62,21 @@ const migrateMembers = async () =>{
                 type: "student",
                 member: {firstname: student.Member.MemberName, lastname: student.Member.MemberSurname, age: student.Member.MemberAge},
                 student: {student_id: student.StudentID, degree: student.Degree},
-                Enrollments: [],
-                Payments: []
+                Enrollments: []
             };
         }
         if(student.Member.Enrollments){
             student.Member.Enrollments.forEach((enrollment) => {
             members[student.MemberID].Enrollments.push({
+                ProgramID: enrollment.Course.Program.ProgramID,
                 CourseID: enrollment.CourseID,
-                EnrollDate: enrollment.EnrollDate
-            });
-
-            if (enrollment.Payment) {
-                members[student.MemberID].Payments.push({
-                    CourseID: enrollment.CourseID,
+                EnrollDate: enrollment.EnrollDate,
+                Payment: {
                     Amount: enrollment.Payment.TotalAmount,
                     PayDate: enrollment.Payment.PayDate,
                     Discount: enrollment.Payment.Discount
-                });
-            }
+                }
+            });
         });
         }
     })
@@ -83,10 +88,19 @@ const migrateMembers = async () =>{
             include : [{
             model: Enrollment,
             required: true,
-                    include : [{
+                include : [{
                     model: Payment,
-                    required: true
-                }]
+                    required: true,
+                },
+                {
+                    model: Course,
+                    required: true,
+                    include : [{
+                        model: Program,
+                        required: true
+                    }]
+                }   
+                ],
             }]
         }]
     })
@@ -99,24 +113,19 @@ const migrateMembers = async () =>{
                 type: "customer",
                 member: {firstname: customer.Member.MemberName, lastname: customer.Member.MemberSurname, age: customer.Member.MemberAge},
                 customer: {company_name: customer.CompanyName, occupation: customer.Occupation},
-                Enrollments: [],
-                Payments: []
+                Enrollments: []
             };
         }
         if(customer.Member.Enrollments){
             customer.Member.Enrollments.forEach((enrollment) => {
             members[customer.MemberID].Enrollments.push({
+                ProgramID: enrollment.Course.Program.ProgramID,
                 CourseID: enrollment.CourseID,
-                EnrollDate: enrollment.EnrollDate
-            });
-
-            if (enrollment.Payment) {
-                members[customer.MemberID].Payments.push({
-                    CourseID: enrollment.CourseID,
+                EnrollDate: enrollment.EnrollDate,
+                Payment: {
                     Amount: enrollment.Payment.TotalAmount,
-                    PayDate: enrollment.Payment.PayDate
-                });
-            }
+                    PayDate: enrollment.Payment.PayDate}
+            });
         });
         }
     })

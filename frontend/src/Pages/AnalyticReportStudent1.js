@@ -1,19 +1,38 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { ReportConvertor } from '../Logic/analyticsReportConvertor'
 import '../PagesCSS/AnalyticReportStudent1.css'
 
 
 function AnalyticsReportStudent1() {
     const [resultsOfReport, setresultsOfReport] = useState([]);
+    const [noSQLMode, setNoSQLMode] = useState(null);
     const location = useLocation();
     const selectedProgram = location.state?.ProgramID;
 
     useEffect(() =>{
+    axios.get("http://localhost:3001/mongodb/check").then((resp)=>{
+      setNoSQLMode(resp.data)
+    })
+    }, [])
+
+    useEffect(() =>{
+      if(noSQLMode){
+        axios.post("http://localhost:3001/mongodb/mongoReport", {
+            ProgramID : selectedProgram,
+          }).then((resp)=>{
+        const convertedData = ReportConvertor(resp.data);
+        setresultsOfReport(convertedData)
+        console.log("The NoSQL mode is used")
+      })
+      }
+      else{
         axios.post("http://localhost:3001/program/student1Report",{
             ProgramID : selectedProgram,
           }).then((resp) => {setresultsOfReport(resp.data)})
-    }, [])
+      }
+    }, [noSQLMode])
 
     return ( 
     <div className="analytics-container">

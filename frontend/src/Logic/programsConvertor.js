@@ -6,6 +6,7 @@ function ProgramConvertor(programsArray){
         const courses = []
         programToConvert.enrolled_courses.forEach(course =>{
             courses.push({
+                ProgramID : programToConvert._id,
                 CourseID : course._id,
                 CourseName : course.course_name,
                 Field : course.Field,

@@ -39,19 +39,26 @@ function CoursesList() {
     });
   };
 
+  const handleMigrateDB = async () => {
+  try {
+      await axios.get("http://localhost:3001/mongodb/migrateMembers");
+      await axios.get("http://localhost:3001/mongodb/migrateCourses");
+      await axios.get("http://localhost:3001/mongodb/migratePrograms");
+      alert("Database migrated successfully!");
+    } catch (error) {
+      console.error("Migration failed:", error);
+      alert("Migration failed. Check console for details.");
+    }
+  };
+
   const handleButton = async (member, course) =>{
     try {
       if(noSQLMode){
         await axios.post("http://localhost:3001/mongodb/mongoAddEnrollment",
           {
             MemberID : member.MemberID,
-            CourseID : course.CourseID
-          }
-        )
-        await axios.post("http://localhost:3001/mongodb/mongoAddPayment",
-          {
-            MemberID : member.MemberID,
             CourseID : course.CourseID,
+            ProgramID : course.ProgramID,
             Type : member.type,
             Price : course.Price
           }
@@ -140,6 +147,13 @@ function CoursesList() {
     </div>
   )}
 
+  <div className="migrate-db-container">
+  <button className="migrate-db-btn" onClick={handleMigrateDB}>
+    Migrate DB
+  </button>
+  </div>
+
+
   {selectedProgram && (
     <div className="selection-analytics-report">
       <div className="selection-content">
@@ -150,7 +164,9 @@ function CoursesList() {
       </div>
     </div>
   )}
-</div>
+  </div>
+
+  
   );
 }
 

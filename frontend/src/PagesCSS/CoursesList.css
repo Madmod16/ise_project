@@ -224,6 +224,31 @@
   left: 2rem; 
 }
 
+.migrate-db-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  margin-top: 30px;
+  width: 100%;
+}
+
+.migrate-db-btn {
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.migrate-db-btn:hover {
+  background-color: #0056b3;
+}
+
 
 @media (max-width: 768px) {
   .program-grid {
