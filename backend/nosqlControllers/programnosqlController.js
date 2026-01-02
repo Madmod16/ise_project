@@ -48,7 +48,17 @@ const addEnrollment = async (req, res) => {
         };
 
         await dbo.collection("members").updateOne(
-            { _id: MemberID }, 
+            { 
+            _id: MemberID, 
+            Enrollments: { 
+                $not: { 
+                $elemMatch: { 
+                    ProgramID: ProgramID, 
+                    CourseID: CourseID 
+                    } 
+                } 
+                }
+            },
             { $push: { Enrollments: newEnrollment } } 
         );
 
