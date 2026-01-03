@@ -15,20 +15,12 @@ const shuffle = (arr) => {
     return a;
 };
 
-const pad2 = (n) => String(n).padStart(2, "0");
-const randomDateISO = (startYear = 2023, endYear = 2026) => {
-    const y = randInt(startYear, endYear);
-    const m = randInt(1, 12);
-    const d = randInt(1, 28);
-    return `${y}-${pad2(m)}-${pad2(d)}`;
-};
-
 function makeIdGen() {
     let cur = randInt(1, 50000);
-    return () => ++cur; // stabil im Lauf, aber anders pro Start
+    return () => ++cur;
 }
 
-/* -------------------- pools (6er Auswahl pro Start) -------------------- */
+/* -------------------- pools -------------------- */
 const FIRST_POOL = ["Maria", "Stefan", "Elia", "Anna", "Lukas", "Nina", "Tobias", "Sara", "David", "Mila", "Paul", "Lea"];
 const LAST_POOL = ["Kadlec", "Hofer", "Gruber", "Mayer", "Huber", "Bauer", "Wagner", "Leitner", "Novak", "Schmid", "Fischer", "Berger"];
 
@@ -70,8 +62,7 @@ async function seedOnStartupRandom({ reset = true } = {}) {
         "Member",
         "PrivateCustomer",
         "UniversityStudent",
-        "Enrollment",
-        "Payment",
+        // ❌ Enrollment, Payment entfernt
     ];
     const missing = needed.filter((n) => !db[n]);
     if (missing.length) {
@@ -87,11 +78,8 @@ async function seedOnStartupRandom({ reset = true } = {}) {
         Member,
         PrivateCustomer,
         UniversityStudent,
-        Enrollment,
-        Payment,
     } = db;
 
-    // Pro Start immer 6 „verschiedene“ Werte auswählen:
     const FIRST = shuffle(FIRST_POOL).slice(0, 6);
     const LAST = shuffle(LAST_POOL).slice(0, 6);
     const ACCREDITATIONS = shuffle(ACCREDITATIONS_POOL).slice(0, 6);
@@ -114,34 +102,22 @@ async function seedOnStartupRandom({ reset = true } = {}) {
         modulesMax: 4,
         tutors: 6,
         members: 12,
-        enrollments: 10,
-        pctPayments: 0.8,
         pctPrivate: 0.5,
         pctStudent: 0.4,
     };
-
-    // Enrollment hat UNIQUE(MemberId, CourseId) bei dir -> max combos = members*courses
-    cfg.enrollments = Math.min(cfg.enrollments, cfg.members * cfg.courses);
 
     const t = await sequelize.transaction();
     try {
         if (reset) {
             // Reihenfolge: Child -> Parent
             await IsTaughtBy.destroy({ where: {}, transaction: t });
-            await Payment.destroy({ where: {}, transaction: t });
-            await Enrollment.destroy({ where: {}, transaction: t });
             await UniversityStudent.destroy({ where: {}, transaction: t });
             await PrivateCustomer.destroy({ where: {}, transaction: t });
             await Member.destroy({ where: {}, transaction: t });
             await Module.destroy({ where: {}, transaction: t });
 
-            // ✅ WICHTIG (Tutor hat Self-FK SupervisorId -> Tutor.Id)
-            // Erst alle Supervisor-Verweise lösen, dann löschen
-            await Tutor.update(
-                { SupervisorId: null },
-                { where: {}, transaction: t }
-            );
-
+            // Tutor Self-FK SupervisorId -> erst lösen, dann löschen
+            await Tutor.update({ SupervisorId: null }, { where: {}, transaction: t });
             await Tutor.destroy({ where: {}, transaction: t });
 
             await Course.destroy({ where: {}, transaction: t });
@@ -185,7 +161,7 @@ async function seedOnStartupRandom({ reset = true } = {}) {
                 await Module.create(
                     {
                         CourseId: cId,
-                        ModuleId: m, // so heißt es bei dir
+                        ModuleId: m,
                         Name: `${rand(MODULE_NAMES)} ${randInt(1, 20)}`,
                         Subject: rand(MODULE_SUBJECTS),
                     },
@@ -194,11 +170,10 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             }
         }
 
-        /* -------- Tutor (6 Stück, Namen/Accreditation ändern sich je Start) -------- */
+        /* -------- Tutor -------- */
         const tutorIds = [];
         for (let i = 0; i < cfg.tutors; i++) {
             const id = nextId();
-            // Supervisor nur wenn schon jemand existiert
             const supervisorId = tutorIds.length > 0 && Math.random() < 0.4 ? rand(tutorIds) : null;
 
             const row = await Tutor.create(
@@ -216,7 +191,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
         }
 
         /* -------- IsTaughtBy -------- */
-        // jeder Tutor unterrichtet 1-2 Kurse
         const pairs = new Set();
         for (const tId of tutorIds) {
             const howMany = randInt(1, Math.min(2, courseIds.length));
@@ -280,51 +254,12 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             );
         }
 
-        /* -------- Enrollment (Id auto_increment bei dir => nicht setzen) -------- */
-        // Unique(MemberId, CourseId) -> Kombinationen erzeugen
-        const combos = [];
-        for (const mId of memberIds) {
-            for (const cId of courseIds) combos.push([mId, cId]);
-        }
-        const pickedCombos = shuffle(combos).slice(0, cfg.enrollments);
-
-        const enrollmentIds = [];
-        for (const [mId, cId] of pickedCombos) {
-            const e = await Enrollment.create(
-                {
-                    MemberId: mId,
-                    CourseId: cId,
-                    Date: randomDateISO(2023, 2026),
-                    Validity: Math.random() < 0.85 ? 1 : 0,
-                },
-                { transaction: t }
-            );
-            enrollmentIds.push(e.Id);
-        }
-
-        /* -------- Payment (Id auto_increment; EnrollmentId UNIQUE) -------- */
-        const payEnrollments = shuffle(enrollmentIds).slice(0, Math.floor(enrollmentIds.length * cfg.pctPayments));
-
-        for (const enrollmentId of payEnrollments) {
-            await Payment.create(
-                {
-                    EnrollmentId: enrollmentId,
-                    PayDate: randomDateISO(2023, 2026),
-                    Amount: randInt(1, 300),
-                    Discount: Math.random() < 0.35 ? randInt(0, 30) : 0,
-                },
-                { transaction: t }
-            );
-        }
-
         await t.commit();
         console.log("[seed-random] OK:", {
             programs: programIds.length,
             courses: courseIds.length,
             tutors: tutorIds.length,
             members: memberIds.length,
-            enrollments: enrollmentIds.length,
-            payments: payEnrollments.length,
             variantsEachStart: {
                 tutorFirstNames: FIRST,
                 tutorLastNames: LAST,

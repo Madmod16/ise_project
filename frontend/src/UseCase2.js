@@ -23,7 +23,6 @@ function TutorModuleUseCase() {
 
     const [reportRows, setReportRows] = useState([]);
 
-    // ✅ NEU: Seed-Button State
     const [seeding, setSeeding] = useState(false);
     const [seedMsg, setSeedMsg] = useState("");
 
@@ -32,7 +31,6 @@ function TutorModuleUseCase() {
         [tutors, activeTutorId]
     );
 
-    // ✅ NEU: Tutor-Liste reload Funktion
     const reloadTutors = async () => {
         const resp = await axios.get(`${API}/tutors`);
         setTutors(resp.data);
@@ -42,7 +40,6 @@ function TutorModuleUseCase() {
         reloadTutors().catch((err) => console.error("GET /tutors failed:", err));
     }, []);
 
-    // ✅ NEU: Seed aus GUI triggern
     const runSeed = async () => {
         const ok = window.confirm(
             "Replace existing data with randomized import?\nThis will delete current data."
@@ -55,7 +52,6 @@ function TutorModuleUseCase() {
         try {
             await axios.post(`${API}/seed`, {}); // Backend: POST /seed => reset+random seed
 
-            // UI resetten
             setActiveTutorId(null);
             setCourses([]);
             setSelectedCourse(null);
@@ -149,37 +145,18 @@ function TutorModuleUseCase() {
 
     return (
         <div className="tm-container">
-            {/* ✅ NEU: Top-Bar mit Seed Button */}
             <div
                 style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: "1rem",
-                    marginBottom: "1.5rem"   // 👈 mehr Luft nach unten
+                    marginBottom: "1.5rem"
                 }}
             >
                 <h2 className="tm-title" style={{margin: 0}}>Tutors</h2>
 
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.75rem",
-                        marginTop: "0.5rem"    // 👈 Button leicht nach unten
-                    }}
-                >
-                    <button
-                        className="tm-btn tm-btn-primary"
-                        type="button"
-                        onClick={runSeed}
-                        disabled={seeding}
-                    >
-                        {seeding ? "Importing..." : "Import Random Data"}
-                    </button>
 
-                    {seedMsg && <div style={{fontSize: "0.9rem"}}>{seedMsg}</div>}
-                </div>
             </div>
             <div className="tm-tutor-list">
                 {tutors.map((t) => {
