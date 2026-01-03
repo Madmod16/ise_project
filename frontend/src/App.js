@@ -1,8 +1,8 @@
 import './App.css';
-import SelectTheUser from './SelectTheUser';
-import CoursesList from './CoursesList';
+import SelectTheUser from './Pages/SelectTheUser';
+import CoursesList from './Pages/CoursesList';
 import TutorModuleUseCase from './UseCase2';
-import AnalyticsReportStudent1 from './AnalyticReportStudent1'
+import AnalyticsReportStudent1 from './Pages/AnalyticReportStudent1'
 
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
 
