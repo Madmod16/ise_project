@@ -40,17 +40,17 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.Program = require("./Program")(sequelize, DataTypes);
-db.Course = require("./Course")(sequelize, DataTypes);
-db.Tutor = require("./Tutor")(sequelize, DataTypes);
-db.IsTaughtBy = require("./IsTaughtBy")(sequelize, DataTypes);
+db.Program = require("./Program")(sequelize, Sequelize);
+db.Course = require("./Course")(sequelize, Sequelize);
+db.Tutor = require("./Tutor")(sequelize, Sequelize);
+db.IsTaughtBy = require("./IsTaughtBy")(sequelize, Sequelize);
 
-db.Module = require("./Module")(sequelize, DataTypes);
-db.Member = require("./Member")(sequelize, DataTypes);
-db.PrivateCustomer = require("./PrivateCustomer")(sequelize, DataTypes);
-db.UniversityStudent = require("./UniversityStudent")(sequelize, DataTypes);
-db.Enrollment = require("./Enrollment")(sequelize, DataTypes);
-db.Payment = require("./Payment")(sequelize, DataTypes);
+db.Module = require("./Module")(sequelize, Sequelize);
+db.Member = require("./Member")(sequelize, Sequelize);
+db.PrivateCustomer = require("./PrivateCustomer")(sequelize, Sequelize);
+db.UniversityStudent = require("./UniversityStudent")(sequelize, Sequelize);
+db.Enrollment = require("./Enrollment")(sequelize, Sequelize);
+db.Payment = require("./Payment")(sequelize, Sequelize);
 
 if (db.Program && db.Course) {
   db.Program.hasMany(db.Course, { foreignKey: "ProgramId", as: "Courses" });
