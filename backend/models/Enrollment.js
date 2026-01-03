@@ -1,52 +1,57 @@
 module.exports = (sequelize, DataTypes) => {
   const Enrollment = sequelize.define(
-    "Enrollment",
-    {
-      EnrollmentID: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-
-      MemberID: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Member",
-          key: "MemberID",
+      "Enrollment",
+      {
+        Id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          primaryKey: true,
+          autoIncrement: true
         },
-        onDelete: "CASCADE",
-        onUpdate: "CASCADE",
-      },
 
-      CourseID: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Course",
-          key: "CourseID",
+        MemberId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "Member",
+            key: "Id",
+          },
+          onDelete: "CASCADE",
+          onUpdate: "CASCADE",
         },
-        onDelete: "RESTRICT",
-        onUpdate: "CASCADE",
-      },
 
-      EnrollDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-    },
-    {
-      tableName: "Enrollment",
-      timestamps: false,
-
-      indexes: [
-        {
-          unique: true,
-          fields: ["MemberID", "CourseID"],
+        CourseId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "Course",
+            key: "Id",
+          },
+          onDelete: "RESTRICT",
+          onUpdate: "CASCADE",
         },
-      ],
-    }
+
+        Date: {
+          type: DataTypes.DATEONLY,
+          allowNull: false,
+        },
+
+        Validity: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+        },
+      },
+      {
+        tableName: "Enrollment",
+        timestamps: false,
+
+        indexes: [
+          {
+            unique: true,
+            fields: ["MemberId", "CourseId"],
+          },
+        ],
+      }
   );
 
   return Enrollment;
