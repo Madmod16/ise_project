@@ -35,7 +35,7 @@ function CoursesList() {
 
   const handleProceed = () => {
     navigate('/AnalyticsReportStudent1', { 
-      state: { ProgramID: selectedProgram.ProgramID} 
+      state: { ProgramID: selectedProgram.Id } 
     });
   };
 
@@ -93,6 +93,7 @@ function CoursesList() {
   };
 
   const handleProgramSelection = (program) => {
+    console.log(program)
     setSelectedProgram(program);
   };
 
@@ -141,7 +142,7 @@ function CoursesList() {
   {selectedOption && (
     <div className="selection-info-course">
       <div className="selection-content">
-        <p><strong>Selected Course:</strong> {selectedOption.CourseName}</p>
+        <p><strong>Selected Course:</strong> {selectedOption.Name}</p>
         <button className="continue-btn" onClick={() => handleButton(selectedMember, selectedOption)}>
           Continue with Course
         </button>
@@ -159,7 +160,7 @@ function CoursesList() {
   {selectedProgram && (
     <div className="selection-analytics-report">
       <div className="selection-content">
-        <p><strong>Selected Program:</strong> {selectedProgram.ProgramName}</p>
+        <p><strong>Selected Program:</strong> {selectedProgram.Name}</p>
         <button className="continue-btn analytics" onClick={handleProceed}>
           View Analytics Report
         </button>

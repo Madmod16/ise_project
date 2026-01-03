@@ -10,7 +10,7 @@ const courseRouter = require("./routes/course");
 const programRouter = require("./routes/program");
 const mongodbRouter = require("./routes/mongodb");
 const seedRouter = require("./routes/seed");
-const tutorRouter = require("./routes/tutor"); // falls du es ergänzt hast
+const tutorRouter = require("./routes/tutor"); 
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/seed", seedRouter);
-app.use("/tutors", tutorRouter); // wichtig fürs Frontend
+app.use("/tutors", tutorRouter); 
 
 app.use("/member", memberRouter);
 app.use("/enrollment", enrollmentRouter);

@@ -20,7 +20,7 @@ function AnalyticsReportStudent1() {
     useEffect(() =>{
       if(noSQLMode){
         axios.post("http://localhost:3001/mongodb/mongoReport", {
-            ProgramID : selectedProgram,
+            ProgramId : selectedProgram,
           }).then((resp)=>{
         const convertedData = ReportConvertor(resp.data);
         setresultsOfReport(convertedData)
@@ -29,7 +29,7 @@ function AnalyticsReportStudent1() {
       }
       else{
         axios.post("http://localhost:3001/program/student1Report",{
-            ProgramID : selectedProgram,
+            ProgramId : selectedProgram,
           }).then((resp) => {setresultsOfReport(resp.data)})
       }
     }, [noSQLMode])
