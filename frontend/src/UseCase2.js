@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import "./CourseUseCase2.css";
 
+const API = "http://localhost:3001";
+
 function initialsFrom(name, surname) {
     const a = (surname || "").trim()[0] || "";
     const b = (name || "").trim()[0] || "";
@@ -21,17 +23,56 @@ function TutorModuleUseCase() {
 
     const [reportRows, setReportRows] = useState([]);
 
+    // ✅ NEU: Seed-Button State
+    const [seeding, setSeeding] = useState(false);
+    const [seedMsg, setSeedMsg] = useState("");
+
     const activeTutor = useMemo(
         () => tutors.find((t) => t.Id === activeTutorId) || null,
         [tutors, activeTutorId]
     );
 
+    // ✅ NEU: Tutor-Liste reload Funktion
+    const reloadTutors = async () => {
+        const resp = await axios.get(`${API}/tutors`);
+        setTutors(resp.data);
+    };
+
     useEffect(() => {
-        axios
-            .get("http://localhost:3001/tutors")
-            .then((resp) => setTutors(resp.data))
-            .catch((err) => console.error("GET /tutors failed:", err));
+        reloadTutors().catch((err) => console.error("GET /tutors failed:", err));
     }, []);
+
+    // ✅ NEU: Seed aus GUI triggern
+    const runSeed = async () => {
+        const ok = window.confirm(
+            "Replace existing data with randomized import?\nThis will delete current data."
+        );
+        if (!ok) return;
+
+        setSeeding(true);
+        setSeedMsg("");
+
+        try {
+            await axios.post(`${API}/seed`, {}); // Backend: POST /seed => reset+random seed
+
+            // UI resetten
+            setActiveTutorId(null);
+            setCourses([]);
+            setSelectedCourse(null);
+            setShowAddModule(false);
+            setReportRows([]);
+            setModuleName("");
+            setModuleSubject("");
+
+            await reloadTutors();
+            setSeedMsg("Data import finished.");
+        } catch (err) {
+            setSeedMsg(err?.response?.data?.error || "Seed failed");
+            console.error("POST /seed failed:", err);
+        } finally {
+            setSeeding(false);
+        }
+    };
 
     const toggleTutor = async (tutor) => {
         const isSame = tutor.Id === activeTutorId;
@@ -53,7 +94,7 @@ function TutorModuleUseCase() {
         setModuleSubject("");
 
         try {
-            const resp = await axios.get(`http://localhost:3001/tutors/${tutor.Id}/courses`);
+            const resp = await axios.get(`${API}/tutors/${tutor.Id}/courses`);
             setCourses(resp.data);
         } catch (err) {
             console.error("GET /tutors/:id/courses failed:", err);
@@ -62,9 +103,9 @@ function TutorModuleUseCase() {
     };
 
     const fetchReport = async (tutorId, courseId) => {
-        const reportResp = await axios.post("http://localhost:3001/modules/report", {
+        const reportResp = await axios.post(`${API}/modules/report`, {
             tutorId,
-            courseId
+            courseId,
         });
         setReportRows(reportResp.data);
     };
@@ -76,11 +117,11 @@ function TutorModuleUseCase() {
         }
 
         try {
-            await axios.post("http://localhost:3001/modules", {
+            await axios.post(`${API}/modules`, {
                 tutorId: activeTutor.Id,
                 courseId: selectedCourse.CourseId,
                 name: moduleName,
-                subject: moduleSubject
+                subject: moduleSubject,
             });
 
             await fetchReport(activeTutor.Id, selectedCourse.CourseId);
@@ -108,8 +149,38 @@ function TutorModuleUseCase() {
 
     return (
         <div className="tm-container">
-            <h2 className="tm-title">Tutors</h2>
+            {/* ✅ NEU: Top-Bar mit Seed Button */}
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    marginBottom: "1.5rem"   // 👈 mehr Luft nach unten
+                }}
+            >
+                <h2 className="tm-title" style={{margin: 0}}>Tutors</h2>
 
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        marginTop: "0.5rem"    // 👈 Button leicht nach unten
+                    }}
+                >
+                    <button
+                        className="tm-btn tm-btn-primary"
+                        type="button"
+                        onClick={runSeed}
+                        disabled={seeding}
+                    >
+                        {seeding ? "Importing..." : "Import Random Data"}
+                    </button>
+
+                    {seedMsg && <div style={{fontSize: "0.9rem"}}>{seedMsg}</div>}
+                </div>
+            </div>
             <div className="tm-tutor-list">
                 {tutors.map((t) => {
                     const active = t.Id === activeTutorId;
@@ -135,8 +206,6 @@ function TutorModuleUseCase() {
                                 <div className="tm-expand">
                                     <div className="tm-courses-bar">
                                         <h4 className="tm-subtitle">Tutor’s Courses</h4>
-
-
                                     </div>
 
                                     <div className="tm-course-grid">
@@ -170,16 +239,14 @@ function TutorModuleUseCase() {
                                                         <span className="tm-pill">€ {c.Price}</span>
                                                     </div>
                                                 </div>
-
                                             );
                                         })}
                                     </div>
 
                                     {selectedCourse && showAddModule && (
                                         <div className="tm-addbox">
-                                            <div className="tm-addbox-title">
-                                                Add module to: {selectedCourse.CourseName}
-                                            </div>
+                                            <div className="tm-addbox-title">Add module
+                                                to: {selectedCourse.CourseName}</div>
 
                                             <div className="tm-form">
                                                 <div className="tm-field">
@@ -202,7 +269,8 @@ function TutorModuleUseCase() {
                                                     />
                                                 </div>
 
-                                                <button className="tm-btn tm-btn-primary" onClick={handleAddModule} type="button">
+                                                <button className="tm-btn tm-btn-primary" onClick={handleAddModule}
+                                                        type="button">
                                                     Save
                                                 </button>
                                             </div>
@@ -211,7 +279,7 @@ function TutorModuleUseCase() {
 
                                     {reportRows.length > 0 && (
                                         <div className="tm-report">
-                                            <div style={{ fontWeight: 900, marginBottom: "0.65rem", color: "#111827" }}>
+                                            <div style={{fontWeight: 900, marginBottom: "0.65rem", color: "#111827"}}>
                                                 Analytics Report (Modules)
                                             </div>
 
@@ -228,7 +296,9 @@ function TutorModuleUseCase() {
                                                 <tbody>
                                                 {reportRows.map((r, idx) => (
                                                     <tr key={idx}>
-                                                        <td>{r.TutorSurname} {r.TutorName}</td>
+                                                        <td>
+                                                            {r.TutorSurname} {r.TutorName}
+                                                        </td>
                                                         <td>{r.CourseName}</td>
                                                         <td>{r.ModuleId ?? "-"}</td>
                                                         <td>{r.ModuleName ?? "-"}</td>

@@ -1,51 +1,51 @@
+require("dotenv").config();
 const express = require("express");
-const db = require('./models');
-const mongodb = require('./mongoDB');
-const app = express()
-const cors = require('cors')
-const memberRouter = require('./routes/member')
-const enrollmentRouter = require('./routes/enrollment')
-const paymentRouter = require('./routes/payment')
-const courseRouter = require('./routes/course')
-const programRouter = require('./routes/program')
-const mongodbRouter = require('./routes/mongodb')
+const db = require("./models");
+const cors = require("cors");
 
-async function startServer() {
-    try {
-        await mongodb.connectToServer();
-        db.sequelize.sync().then(() =>{
-          app.listen(3001, () => {
-          console.log("Server running on port 3001")
-          })
-        })
-    } catch (err) {
-        console.error("Failed to connect to DB", err);
-        process.exit();
-    }
-}
+const { seedOnStartupRandom } = require("./controllers/seedController");
 
-const gracefulShutdown = async () => {
-    console.log("Closing DB connection...");
-    await db.closeConnection();
-    process.exit(0);
-};
+const app = express();
+
+const memberRouter = require("./routes/member");
+const enrollmentRouter = require("./routes/enrollment");
+const paymentRouter = require("./routes/payment");
+const courseRouter = require("./routes/course");
+const programRouter = require("./routes/program");
+
+// Use Case 2 route
+const tutorRouter = require("./routes/tutor");
+const moduleRouter = require("./routes/module");
 
 app.use(express.json());
 app.use(cors());
 
-app.use('/member', memberRouter);
-app.use('/enrollment', enrollmentRouter);
-app.use('/course', courseRouter);
-app.use('/payment', paymentRouter);
-app.use('/program', programRouter);
-app.use('/mongodb', mongodbRouter);
+app.use("/member", memberRouter);
+app.use("/enrollment", enrollmentRouter);
+app.use("/course", courseRouter);
+app.use("/payment", paymentRouter);
+app.use("/program", programRouter);
 
-db.sequelize.sync().then(() =>{
-  app.listen(3001, () => {
-    console.log("Server running on port 3001")
-  })
-})
+// Use Case 2 endpoint
+app.use("/tutors", tutorRouter);
+app.use("/modules", moduleRouter);
 
-startServer();
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
+const port = Number(process.env.PORT || 3001);
+
+db.sequelize
+    .sync()
+    .then(async () => {
+        // ✅ jedes Start: alte Daten löschen + random neu einfügen
+        await seedOnStartupRandom({ reset: true });
+
+        app.listen(port, () => {
+            console.log(`Server running on port ${port}`);
+        });
+    })
+    .catch((err) => {
+        console.error("Startup failed:", err);
+        process.exit(1);
+    });
+
+const seedRouter = require("./routes/seed");
+app.use("/seed", seedRouter);

@@ -1,8 +1,11 @@
+// controllers/seedController.js
 const db = require("../models");
 const { sequelize } = db;
 
+/* -------------------- helpers -------------------- */
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 const shuffle = (arr) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -11,6 +14,7 @@ const shuffle = (arr) => {
     }
     return a;
 };
+
 const pad2 = (n) => String(n).padStart(2, "0");
 const randomDateISO = (startYear = 2023, endYear = 2026) => {
     const y = randInt(startYear, endYear);
@@ -20,76 +24,34 @@ const randomDateISO = (startYear = 2023, endYear = 2026) => {
 };
 
 function makeIdGen() {
-    const used = new Set();
-    const base = randInt(1_000_000, 1_800_000_000);
-    return () => {
-        let id;
-        do {
-            id = base + randInt(0, 150_000_000);
-            if (id > 2_000_000_000) id = randInt(1_000_000, 2_000_000_000);
-        } while (used.has(id));
-        used.add(id);
-        return id;
-    };
+    let cur = randInt(1, 50000);
+    return () => ++cur; // stabil im Lauf, aber anders pro Start
 }
 
-function requireModels(names) {
-    const missing = names.filter((n) => !db[n]);
-    return { ok: missing.length === 0, missing };
-}
+/* -------------------- pools (6er Auswahl pro Start) -------------------- */
+const FIRST_POOL = ["Maria", "Stefan", "Elia", "Anna", "Lukas", "Nina", "Tobias", "Sara", "David", "Mila", "Paul", "Lea"];
+const LAST_POOL = ["Kadlec", "Hofer", "Gruber", "Mayer", "Huber", "Bauer", "Wagner", "Leitner", "Novak", "Schmid", "Fischer", "Berger"];
 
-function pkAttr(model) {
-    if (!model) return null;
-    return (
-        model.primaryKeyAttribute ||
-        (Array.isArray(model.primaryKeyAttributes) ? model.primaryKeyAttributes[0] : null)
-    );
-}
+const ACCREDITATIONS_POOL = ["BMFWF", "OeAD", "IIBA", "PMI", "ISO", "ECQA", "AWS", "ISTQB", "SAP", "Oracle"];
+const TUTOR_SPEC_POOL = ["Business Analyst", "Project Manager", "Scrum Master", "Data Analyst", "Architect", "Requirements Engineer"];
 
-function isAutoInc(model) {
-    if (!model) return false;
-    const pk = pkAttr(model);
-    if (!pk) return false;
-    const ra = model.rawAttributes?.[pk];
-    return Boolean(ra?.autoIncrement);
-}
-
-function pickAttr(model, candidates) {
-    if (!model?.rawAttributes) return null;
-    const keys = new Set(Object.keys(model.rawAttributes));
-    for (const c of candidates) if (keys.has(c)) return c;
-    return null;
-}
-
-const FIRST = ["Maria", "Stefan", "Elia", "Anna", "Lukas", "Nina", "Tobias", "Sara", "David", "Mila", "Paul", "Lea"];
-const LAST = ["Kadlec", "Hofer", "Gruber", "Mayer", "Huber", "Bauer", "Wagner", "Leitner", "Novak", "Schmid"];
-
-const COMPANIES = ["Kapsch", "OMV", "A1", "Wien Energie", "Erste Group", "Raiffeisen", "Siemens", "ÖBB"];
-const OCCUPATIONS = ["Clerk", "Analyst", "Engineer", "Designer", "Consultant", "Manager", "Assistant"];
-
-const UNIVERSITIES = ["Uni Wien", "TU Wien", "WU Wien", "FH Technikum", "Uni Graz"];
-const DEGREES = ["BSc", "MSc", "BA", "MA", "PhD"];
-
-const TUTOR_SPECIALIZATIONS = ["Business Analyst", "Project Manager", "Scrum Master", "Data Analyst", "Architect", "Requirements Engineer"];
-const ACCREDITATIONS = ["BMFWF", "OeAD", "IIBA", "PMI", "ISO", "ECQA"];
-
-const PROGRAM_NAMES = ["Software Engineering", "Data & Analytics", "Business Informatics", "Project Management", "Cyber Security"];
-const COURSE_NAMES = [
-    "Requirements Engineering",
-    "SQL for Data Analysis",
-    "Agile Methods",
-    "Behaviour Patterns",
-    "Software Architecture",
+const PROGRAM_NAMES_POOL = ["Software Engineering", "Data & Analytics", "Business Informatics", "Project Management", "Cyber Security", "Cloud & DevOps"];
+const COURSE_NAMES_POOL = [
+    "Requirements Engineering and Elicitation",
+    "Introduction to Data Analysis with SQL",
+    "Agile in Real-Life Projects",
+    "Behaviour Patterns Management",
+    "Software Architecture Basics",
     "Business Process Modeling",
-    "Data Quality",
-    "UX Research",
+    "Data Quality Foundations",
     "Cloud Basics",
     "Database Systems",
+    "UX Research",
 ];
-const COURSE_FIELDS = ["SQL", "Agile", "Psychology", "Architecture", "Business Analysis", "Data Quality", "UX", "Cloud"];
+const COURSE_FIELDS_POOL = ["SQL", "Agile", "Psychology", "Architecture", "Business Analysis", "Data Quality", "UX", "Cloud"];
 
-const MODULE_NAMES = ["Intro", "Basics", "Workshop", "Case Study", "Hands-on Lab", "Exam Prep"];
-const MODULE_SUBJECTS = [
+const MODULE_NAMES_POOL = ["Intro", "Basics", "Workshop", "Case Study", "Hands-on Lab", "Exam Prep"];
+const MODULE_SUBJECTS_POOL = [
     "Foundations and terminology",
     "Practical exercises and examples",
     "Common pitfalls and best practices",
@@ -97,10 +59,12 @@ const MODULE_SUBJECTS = [
     "Advanced topics and patterns",
 ];
 
-const seedRandom = async (req, res) => {
+/* -------------------- main seed -------------------- */
+async function seedOnStartupRandom({ reset = true } = {}) {
     const needed = [
         "Program",
         "Course",
+        "Module",
         "Tutor",
         "IsTaughtBy",
         "Member",
@@ -108,20 +72,16 @@ const seedRandom = async (req, res) => {
         "UniversityStudent",
         "Enrollment",
         "Payment",
-        "Module",
     ];
-
-    const chk = requireModels(needed);
-    if (!chk.ok) {
-        return res.status(500).json({
-            ok: false,
-            error: `Missing Sequelize models in models/index.js export: ${chk.missing.join(", ")}`,
-        });
+    const missing = needed.filter((n) => !db[n]);
+    if (missing.length) {
+        throw new Error(`Missing models export: ${missing.join(", ")}`);
     }
 
     const {
         Program,
         Course,
+        Module,
         Tutor,
         IsTaughtBy,
         Member,
@@ -129,249 +89,253 @@ const seedRandom = async (req, res) => {
         UniversityStudent,
         Enrollment,
         Payment,
-        Module,
     } = db;
 
-    const cfg = {
-        reset: Boolean(req.body?.reset ?? false),
-        programs: Number.isFinite(req.body?.programs) ? req.body.programs : 3,
-        courses: Number.isFinite(req.body?.courses) ? req.body.courses : 10,
-        tutors: Number.isFinite(req.body?.tutors) ? req.body.tutors : 6,
-        members: Number.isFinite(req.body?.members) ? req.body.members : 18,
-        enrollments: Number.isFinite(req.body?.enrollments) ? req.body.enrollments : 10,
-        modulesMin: Number.isFinite(req.body?.modulesMin) ? req.body.modulesMin : 2,
-        modulesMax: Number.isFinite(req.body?.modulesMax) ? req.body.modulesMax : 5,
-        pctPrivateCustomer: Number.isFinite(req.body?.pctPrivateCustomer) ? req.body.pctPrivateCustomer : 0.45,
-        pctUniversityStudent: Number.isFinite(req.body?.pctUniversityStudent) ? req.body.pctUniversityStudent : 0.45,
-        pctPayments: Number.isFinite(req.body?.pctPayments) ? req.body.pctPayments : 0.9,
-    };
+    // Pro Start immer 6 „verschiedene“ Werte auswählen:
+    const FIRST = shuffle(FIRST_POOL).slice(0, 6);
+    const LAST = shuffle(LAST_POOL).slice(0, 6);
+    const ACCREDITATIONS = shuffle(ACCREDITATIONS_POOL).slice(0, 6);
+    const TUTOR_SPEC = shuffle(TUTOR_SPEC_POOL).slice(0, 6);
 
-    cfg.enrollments = Math.min(cfg.enrollments, cfg.courses);
+    const PROGRAM_NAMES = shuffle(PROGRAM_NAMES_POOL);
+    const COURSE_NAMES = shuffle(COURSE_NAMES_POOL);
+    const COURSE_FIELDS = shuffle(COURSE_FIELDS_POOL);
+
+    const MODULE_NAMES = shuffle(MODULE_NAMES_POOL);
+    const MODULE_SUBJECTS = shuffle(MODULE_SUBJECTS_POOL);
+
     const nextId = makeIdGen();
 
-    const ProgramPK = pkAttr(Program);
-    const CoursePK = pkAttr(Course);
-    const TutorPK = pkAttr(Tutor);
-    const MemberPK = pkAttr(Member);
-    const EnrollPK = pkAttr(Enrollment);
+    // Mengen (kannst du anpassen)
+    const cfg = {
+        programs: 2,
+        courses: 4,
+        modulesMin: 2,
+        modulesMax: 4,
+        tutors: 6,
+        members: 12,
+        enrollments: 10,
+        pctPayments: 0.8,
+        pctPrivate: 0.5,
+        pctStudent: 0.4,
+    };
 
-    const CourseProgramFK = pickAttr(Course, ["ProgramID", "ProgramId"]);
-    const CourseName = pickAttr(Course, ["CourseName", "Name"]);
-
-    const TutorNameAttr = pickAttr(Tutor, ["TutorName", "Name"]);
-    const TutorSurnameAttr = pickAttr(Tutor, ["TutorSurname", "Surname"]);
-    const TutorSupervisorFK = pickAttr(Tutor, ["SupervisorID", "SupervisorId"]);
-
-    const ModuleCourseFK = pickAttr(Module, ["CourseID", "CourseId"]);
-    const ModuleId = pickAttr(Module, ["Id", "ModuleID", "ModuleId"]);
-    const ModuleNameAttr = pickAttr(Module, ["ModuleName", "Name"]);
-    const ModuleTopicsAttr = pickAttr(Module, ["TopicsCovered", "Subject"]);
-
-    const MemberNameAttr = pickAttr(Member, ["MemberName", "Name"]);
-    const MemberSurnameAttr = pickAttr(Member, ["MemberSurname", "Surname"]);
-
-    const EnrollMemberFK = pickAttr(Enrollment, ["MemberID", "MemberId"]);
-    const EnrollCourseFK = pickAttr(Enrollment, ["CourseID", "CourseId"]);
-    const EnrollDateAttr = pickAttr(Enrollment, ["EnrollDate", "Date"]);
-
-    const PayEnrollFK = pickAttr(Payment, ["EnrollmentID", "EnrollmentId"]);
-    const PayAmount = pickAttr(Payment, ["Amount", "TotalAmount"]);
-    const PayDiscount = pickAttr(Payment, ["Discount"]);
-
-    const UniMemberFK = pickAttr(UniversityStudent, ["MemberID", "MemberId", "Id"]);
-    const UniStudentId = pickAttr(UniversityStudent, ["StudentID", "StudentId"]);
-    const PrivMemberFK = pickAttr(PrivateCustomer, ["MemberID", "MemberId", "Id"]);
-
-    const ITBTutorFK = pickAttr(IsTaughtBy, ["TutorID", "TutorId"]);
-    const ITBCourseFK = pickAttr(IsTaughtBy, ["CourseID", "CourseId"]);
-
-    const missingAttrs = [];
-    if (!ProgramPK) missingAttrs.push("Program PK");
-    if (!CoursePK || !CourseProgramFK || !CourseName) missingAttrs.push("Course attrs");
-    if (!TutorPK || !TutorNameAttr || !TutorSurnameAttr) missingAttrs.push("Tutor attrs");
-    if (!MemberPK || !MemberNameAttr || !MemberSurnameAttr) missingAttrs.push("Member attrs");
-    if (!EnrollPK || !EnrollMemberFK || !EnrollCourseFK || !EnrollDateAttr) missingAttrs.push("Enrollment attrs (EnrollDate)");
-    if (!ModuleCourseFK || !ModuleId || !ModuleNameAttr || !ModuleTopicsAttr) missingAttrs.push("Module attrs");
-    if (!PayEnrollFK || !PayAmount) missingAttrs.push("Payment attrs");
-    if (!UniMemberFK || !UniStudentId) missingAttrs.push("UniversityStudent attrs");
-    if (!PrivMemberFK) missingAttrs.push("PrivateCustomer attrs");
-    if (!ITBTutorFK || !ITBCourseFK) missingAttrs.push("IsTaughtBy attrs");
-
-    if (missingAttrs.length) {
-        return res.status(500).json({
-            ok: false,
-            error: `Seeder cannot detect required model attributes: ${missingAttrs.join(", ")}`,
-        });
-    }
+    // Enrollment hat UNIQUE(MemberId, CourseId) bei dir -> max combos = members*courses
+    cfg.enrollments = Math.min(cfg.enrollments, cfg.members * cfg.courses);
 
     const t = await sequelize.transaction();
     try {
-        await sequelize.query("SET FOREIGN_KEY_CHECKS = 0;", { transaction: t });
+        if (reset) {
+            // Reihenfolge: Child -> Parent
+            await IsTaughtBy.destroy({ where: {}, transaction: t });
+            await Payment.destroy({ where: {}, transaction: t });
+            await Enrollment.destroy({ where: {}, transaction: t });
+            await UniversityStudent.destroy({ where: {}, transaction: t });
+            await PrivateCustomer.destroy({ where: {}, transaction: t });
+            await Member.destroy({ where: {}, transaction: t });
+            await Module.destroy({ where: {}, transaction: t });
 
-        if (cfg.reset) {
-            const order = [IsTaughtBy, Payment, Enrollment, Module, Course, Program, Tutor, UniversityStudent, PrivateCustomer, Member];
-            for (const m of order) {
-                await m.destroy({ where: {}, truncate: false, transaction: t });
-            }
+            // ✅ WICHTIG (Tutor hat Self-FK SupervisorId -> Tutor.Id)
+            // Erst alle Supervisor-Verweise lösen, dann löschen
+            await Tutor.update(
+                { SupervisorId: null },
+                { where: {}, transaction: t }
+            );
+
+            await Tutor.destroy({ where: {}, transaction: t });
+
+            await Course.destroy({ where: {}, transaction: t });
+            await Program.destroy({ where: {}, transaction: t });
         }
 
+        /* -------- Program -------- */
         const programIds = [];
         for (let i = 0; i < cfg.programs; i++) {
-            const data = {
-                ProgramName: `${rand(PROGRAM_NAMES)} ${randInt(1, 99)}`,
-                Duration: randInt(1, 12),
-            };
-            if (!isAutoInc(Program)) data[ProgramPK] = nextId();
-            const p = await Program.create(data, { transaction: t });
-            programIds.push(p[ProgramPK]);
+            const p = await Program.create(
+                {
+                    Id: nextId(),
+                    Name: `${PROGRAM_NAMES[i % PROGRAM_NAMES.length]} ${randInt(1, 99)}`,
+                    Duration: randInt(3, 12),
+                },
+                { transaction: t }
+            );
+            programIds.push(p.Id);
         }
 
+        /* -------- Course -------- */
         const courseIds = [];
         for (let i = 0; i < cfg.courses; i++) {
-            const data = {
-                [CourseProgramFK]: rand(programIds),
-                [CourseName]: `${rand(COURSE_NAMES)} ${randInt(1, 99)}`,
-                Field: rand(COURSE_FIELDS),
-                Price: randInt(30, 150),
-            };
-            if (!isAutoInc(Course)) data[CoursePK] = nextId();
-            const c = await Course.create(data, { transaction: t });
-            courseIds.push(c[CoursePK]);
+            const c = await Course.create(
+                {
+                    Id: nextId(),
+                    ProgramId: rand(programIds),
+                    Name: `${COURSE_NAMES[i % COURSE_NAMES.length]}`,
+                    Field: rand(COURSE_FIELDS),
+                    Price: randInt(1, 150),
+                },
+                { transaction: t }
+            );
+            courseIds.push(c.Id);
         }
 
-        let moduleCount = 0;
+        /* -------- Module (PK: CourseId + ModuleId) -------- */
         for (const cId of courseIds) {
-            const mCount = randInt(cfg.modulesMin, cfg.modulesMax);
-            for (let m = 1; m <= mCount; m++) {
-                moduleCount++;
+            const count = randInt(cfg.modulesMin, cfg.modulesMax);
+            for (let m = 1; m <= count; m++) {
                 await Module.create(
                     {
-                        [ModuleCourseFK]: cId,
-                        [ModuleId]: m,
-                        [ModuleNameAttr]: `${rand(MODULE_NAMES)} ${randInt(1, 30)}`,
-                        [ModuleTopicsAttr]: rand(MODULE_SUBJECTS),
+                        CourseId: cId,
+                        ModuleId: m, // so heißt es bei dir
+                        Name: `${rand(MODULE_NAMES)} ${randInt(1, 20)}`,
+                        Subject: rand(MODULE_SUBJECTS),
                     },
                     { transaction: t }
                 );
             }
         }
 
+        /* -------- Tutor (6 Stück, Namen/Accreditation ändern sich je Start) -------- */
         const tutorIds = [];
         for (let i = 0; i < cfg.tutors; i++) {
-            const data = {
-                [TutorNameAttr]: rand(FIRST),
-                [TutorSurnameAttr]: rand(LAST),
-                Specialization: rand(TUTOR_SPECIALIZATIONS),
-                Accreditation: rand(ACCREDITATIONS),
-            };
-            if (TutorSupervisorFK) data[TutorSupervisorFK] = tutorIds.length > 0 && Math.random() < 0.5 ? rand(tutorIds) : null;
-            if (!isAutoInc(Tutor)) data[TutorPK] = nextId();
-            const tu = await Tutor.create(data, { transaction: t });
-            tutorIds.push(tu[TutorPK]);
+            const id = nextId();
+            // Supervisor nur wenn schon jemand existiert
+            const supervisorId = tutorIds.length > 0 && Math.random() < 0.4 ? rand(tutorIds) : null;
+
+            const row = await Tutor.create(
+                {
+                    Id: id,
+                    SupervisorId: supervisorId,
+                    Name: FIRST[i % FIRST.length],
+                    Surname: LAST[i % LAST.length],
+                    Specialization: rand(TUTOR_SPEC),
+                    Accreditation: ACCREDITATIONS[i % ACCREDITATIONS.length],
+                },
+                { transaction: t }
+            );
+            tutorIds.push(row.Id);
         }
 
-        const taughtPairs = new Set();
-        let isTaughtByCount = 0;
+        /* -------- IsTaughtBy -------- */
+        // jeder Tutor unterrichtet 1-2 Kurse
+        const pairs = new Set();
         for (const tId of tutorIds) {
-            const howMany = randInt(1, Math.min(4, courseIds.length));
+            const howMany = randInt(1, Math.min(2, courseIds.length));
             const picked = shuffle(courseIds).slice(0, howMany);
             for (const cId of picked) {
                 const key = `${tId}::${cId}`;
-                if (taughtPairs.has(key)) continue;
-                taughtPairs.add(key);
-                isTaughtByCount++;
-                await IsTaughtBy.create({ [ITBTutorFK]: tId, [ITBCourseFK]: cId }, { transaction: t });
+                if (pairs.has(key)) continue;
+                pairs.add(key);
+                await IsTaughtBy.create({ TutorId: tId, CourseId: cId }, { transaction: t });
             }
         }
 
+        /* -------- Member -------- */
         const memberIds = [];
         for (let i = 0; i < cfg.members; i++) {
-            const data = {
-                [MemberNameAttr]: rand(FIRST),
-                [MemberSurnameAttr]: rand(LAST),
-                Age: randInt(18, 65),
-            };
-            if (!isAutoInc(Member)) data[MemberPK] = nextId();
-            const m = await Member.create(data, { transaction: t });
-            memberIds.push(m[MemberPK]);
+            const m = await Member.create(
+                {
+                    Id: nextId(),
+                    Name: rand(FIRST),
+                    Surname: rand(LAST),
+                    Age: randInt(18, 100),
+                },
+                { transaction: t }
+            );
+            memberIds.push(m.Id);
         }
 
+        /* -------- PrivateCustomer / UniversityStudent -------- */
         const shuffledMembers = shuffle(memberIds);
-        const nPrivate = Math.floor(cfg.members * cfg.pctPrivateCustomer);
-        const nStudent = Math.floor(cfg.members * cfg.pctUniversityStudent);
+        const nPrivate = Math.floor(cfg.members * cfg.pctPrivate);
+        const nStudent = Math.floor(cfg.members * cfg.pctStudent);
 
         const privateIds = shuffledMembers.slice(0, nPrivate);
         const studentIds = shuffledMembers.slice(nPrivate, nPrivate + nStudent);
 
-        let privateCount = 0;
         for (const id of privateIds) {
-            privateCount++;
             await PrivateCustomer.create(
-                { [PrivMemberFK]: id, Company: rand(COMPANIES), Occupation: rand(OCCUPATIONS) },
+                {
+                    MemberId: id,
+                    Occupation: rand(["Clerk", "Analyst", "Engineer", "Designer", "Consultant", "Manager"]),
+                    Company: rand(["Kapsch", "OMV", "A1", "Wien Energie", "Erste Group", "Raiffeisen", "Siemens", "ÖBB"]),
+                },
                 { transaction: t }
             );
         }
 
         const usedStudentIds = new Set();
-        let studentCount = 0;
         for (const id of studentIds) {
-            studentCount++;
             let sid;
-            do sid = randInt(100000, 999999);
+            do sid = randInt(1, 999999);
             while (usedStudentIds.has(sid));
             usedStudentIds.add(sid);
 
             await UniversityStudent.create(
-                { [UniMemberFK]: id, [UniStudentId]: sid, University: rand(UNIVERSITIES), Degree: rand(DEGREES) },
+                {
+                    MemberId: id,
+                    StudentID: sid,
+                    Degree: rand(["BSc", "MSc", "BA", "MA"]),
+                },
                 { transaction: t }
             );
         }
 
-        const enrollmentCourseIds = shuffle(courseIds).slice(0, cfg.enrollments);
+        /* -------- Enrollment (Id auto_increment bei dir => nicht setzen) -------- */
+        // Unique(MemberId, CourseId) -> Kombinationen erzeugen
+        const combos = [];
+        for (const mId of memberIds) {
+            for (const cId of courseIds) combos.push([mId, cId]);
+        }
+        const pickedCombos = shuffle(combos).slice(0, cfg.enrollments);
+
         const enrollmentIds = [];
-        for (let i = 0; i < cfg.enrollments; i++) {
-            const data = {
-                [EnrollMemberFK]: rand(memberIds),
-                [EnrollCourseFK]: enrollmentCourseIds[i],
-                [EnrollDateAttr]: randomDateISO(2023, 2026),
-                Validity: Math.random() < 0.85 ? 1 : 0,
-            };
-            if (!isAutoInc(Enrollment)) data[EnrollPK] = nextId();
-            const e = await Enrollment.create(data, { transaction: t });
-            enrollmentIds.push(e[EnrollPK]);
+        for (const [mId, cId] of pickedCombos) {
+            const e = await Enrollment.create(
+                {
+                    MemberId: mId,
+                    CourseId: cId,
+                    Date: randomDateISO(2023, 2026),
+                    Validity: Math.random() < 0.85 ? 1 : 0,
+                },
+                { transaction: t }
+            );
+            enrollmentIds.push(e.Id);
         }
 
+        /* -------- Payment (Id auto_increment; EnrollmentId UNIQUE) -------- */
         const payEnrollments = shuffle(enrollmentIds).slice(0, Math.floor(enrollmentIds.length * cfg.pctPayments));
-        let paymentCount = 0;
+
         for (const enrollmentId of payEnrollments) {
-            paymentCount++;
-            const data = { [PayEnrollFK]: enrollmentId, [PayAmount]: randInt(50, 300) };
-            if (PayDiscount) data[PayDiscount] = Math.random() < 0.35 ? randInt(5, 30) : null;
-            await Payment.create(data, { transaction: t });
+            await Payment.create(
+                {
+                    EnrollmentId: enrollmentId,
+                    PayDate: randomDateISO(2023, 2026),
+                    Amount: randInt(1, 300),
+                    Discount: Math.random() < 0.35 ? randInt(0, 30) : 0,
+                },
+                { transaction: t }
+            );
         }
 
-        await sequelize.query("SET FOREIGN_KEY_CHECKS = 1;", { transaction: t });
         await t.commit();
-
-        return res.status(200).json({
-            ok: true,
-            inserted: {
-                Program: programIds.length,
-                Course: courseIds.length,
-                Module: moduleCount,
-                Tutor: tutorIds.length,
-                IsTaughtBy: isTaughtByCount,
-                Member: memberIds.length,
-                PrivateCustomer: privateCount,
-                UniversityStudent: studentCount,
-                Enrollment: enrollmentIds.length,
-                Payment: paymentCount,
+        console.log("[seed-random] OK:", {
+            programs: programIds.length,
+            courses: courseIds.length,
+            tutors: tutorIds.length,
+            members: memberIds.length,
+            enrollments: enrollmentIds.length,
+            payments: payEnrollments.length,
+            variantsEachStart: {
+                tutorFirstNames: FIRST,
+                tutorLastNames: LAST,
+                accreditations: ACCREDITATIONS,
             },
         });
     } catch (err) {
         try { await t.rollback(); } catch {}
-        return res.status(500).json({ ok: false, error: err.message });
+        console.error("[seed-random] FAILED:", err.message);
+        throw err;
     }
-};
+}
 
-module.exports = { seedRandom };
+module.exports = { seedOnStartupRandom };
