@@ -4,9 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const process = require('process');
+
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
+
 const db = {};
 
 let sequelize;
@@ -16,42 +18,20 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (
-      file.indexOf('.') !== 0 &&
-      file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
-    );
-  })
-  .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
-  });
+// 1) Modelle automatisch laden
+fs.readdirSync(__dirname)
+    .filter(file =>
+        file.indexOf('.') !== 0 &&
+        file !== basename &&
+        file.slice(-3) === '.js' &&
+        file.indexOf('.test.js') === -1
+    )
+    .forEach(file => {
+      const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+      db[model.name] = model;
+    });
 
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
-
-db.sequelize = sequelize;
-db.Sequelize = Sequelize;
-
-db.Program = require("./Program")(sequelize, Sequelize);
-db.Course = require("./Course")(sequelize, Sequelize);
-db.Tutor = require("./Tutor")(sequelize, Sequelize);
-db.IsTaughtBy = require("./IsTaughtBy")(sequelize, Sequelize);
-
-db.Module = require("./Module")(sequelize, Sequelize);
-db.Member = require("./Member")(sequelize, Sequelize);
-db.PrivateCustomer = require("./PrivateCustomer")(sequelize, Sequelize);
-db.UniversityStudent = require("./UniversityStudent")(sequelize, Sequelize);
-db.Enrollment = require("./Enrollment")(sequelize, Sequelize);
-db.Payment = require("./Payment")(sequelize, Sequelize);
-
+// 2) Associations (FIXED)
 if (db.Program && db.Course) {
   db.Program.hasMany(db.Course, { foreignKey: "ProgramId", as: "Courses" });
   db.Course.belongsTo(db.Program, { foreignKey: "ProgramId", as: "Program" });
@@ -91,16 +71,26 @@ if (db.Tutor && db.Course && db.IsTaughtBy) {
   db.Tutor.belongsToMany(db.Course, {
     through: db.IsTaughtBy,
     foreignKey: "TutorId",
-    otherKey: "Id",
+    otherKey: "CourseId",
     as: "Courses",
   });
 
   db.Course.belongsToMany(db.Tutor, {
     through: db.IsTaughtBy,
     foreignKey: "CourseId",
-    otherKey: "Id",
+    otherKey: "TutorId",
     as: "Tutors",
   });
 }
+
+// optional: falls du associate() Methoden in Models hast
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
+});
+
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
 module.exports = db;

@@ -14,9 +14,9 @@ async function startServer() {
     try {
         await mongodb.connectToServer();
         db.sequelize.sync().then(() =>{
-          app.listen(3001, () => {
-          console.log("Server running on port 3001")
-          })
+            app.listen(3001, () => {
+                console.log("Server running on port 3001")
+            })
         })
     } catch (err) {
         console.error("Failed to connect to DB", err);
@@ -41,9 +41,9 @@ app.use('/program', programRouter);
 app.use('/mongodb', mongodbRouter);
 
 db.sequelize.sync().then(() =>{
-  app.listen(3001, () => {
-    console.log("Server running on port 3001")
-  })
+    app.listen(3001, () => {
+        console.log("Server running on port 3001")
+    })
 })
 
 startServer();
