@@ -1,4 +1,3 @@
-/*
 const { Program, Course } = require('../models');
 const { sequelize } = require('../models');
 const { QueryTypes } = require('sequelize');
@@ -64,5 +63,3 @@ const getAnalyticsReport = async (req, res) => {
 }
 
 module.exports = { getProgramsWithCourses, getAnalyticsReport };
-
- */

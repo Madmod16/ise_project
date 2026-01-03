@@ -1,4 +1,3 @@
-/*
 const { Payment } = require('../models')
 
 const addPayment = async (req, res) => {
@@ -31,4 +30,3 @@ const addPayment = async (req, res) => {
 }
 
 module.exports = { addPayment }
- */

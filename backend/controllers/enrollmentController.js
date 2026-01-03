@@ -1,4 +1,4 @@
-/*const { Enrollment, Payment } = require('../models')
+const { Enrollment, Payment } = require('../models')
 
 const addEnrollment = async (req, res) => {
     try {
@@ -28,4 +28,4 @@ const addEnrollment = async (req, res) => {
     }
 }
 
-module.exports = { addEnrollment }*/
+module.exports = { addEnrollment }
