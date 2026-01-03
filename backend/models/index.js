@@ -54,12 +54,12 @@ db.Payment = require("./Payment")(sequelize, DataTypes);
 
 if (db.Program && db.Course) {
   db.Program.hasMany(db.Course, { foreignKey: "ProgramId", as: "Courses" });
-  db.Course.belongsTo(db.Program, { foreignKey: "ProgramId", as: "Program" });
+  db.Course.belongsTo(db.Program, { foreignKey: "Id", as: "Program" });
 }
 
 if (db.Course && db.Module) {
   db.Course.hasMany(db.Module, { foreignKey: "CourseId", as: "Modules" });
-  db.Module.belongsTo(db.Course, { foreignKey: "CourseId", as: "Course" });
+  db.Module.belongsTo(db.Course, { foreignKey: "Id", as: "Course" });
 }
 
 if (db.Member && db.PrivateCustomer) {
@@ -74,31 +74,31 @@ if (db.Member && db.UniversityStudent) {
 
 if (db.Member && db.Enrollment) {
   db.Member.hasMany(db.Enrollment, { foreignKey: "MemberId", as: "Enrollments" });
-  db.Enrollment.belongsTo(db.Member, { foreignKey: "MemberId", as: "Member" });
+  db.Enrollment.belongsTo(db.Member, { foreignKey: "Id", as: "Member" });
 }
 
 if (db.Course && db.Enrollment) {
   db.Course.hasMany(db.Enrollment, { foreignKey: "CourseId", as: "Enrollments" });
-  db.Enrollment.belongsTo(db.Course, { foreignKey: "CourseId", as: "Course" });
+  db.Enrollment.belongsTo(db.Course, { foreignKey: "Id", as: "Course" });
 }
 
 if (db.Enrollment && db.Payment) {
   db.Enrollment.hasOne(db.Payment, { foreignKey: "EnrollmentId", as: "Payment" });
-  db.Payment.belongsTo(db.Enrollment, { foreignKey: "EnrollmentId", as: "Enrollment" });
+  db.Payment.belongsTo(db.Enrollment, { foreignKey: "Id", as: "Enrollment" });
 }
 
 if (db.Tutor && db.Course && db.IsTaughtBy) {
   db.Tutor.belongsToMany(db.Course, {
     through: db.IsTaughtBy,
     foreignKey: "TutorId",
-    otherKey: "CourseId",
+    otherKey: "Id",
     as: "Courses",
   });
 
   db.Course.belongsToMany(db.Tutor, {
     through: db.IsTaughtBy,
     foreignKey: "CourseId",
-    otherKey: "TutorId",
+    otherKey: "Id",
     as: "Tutors",
   });
 }

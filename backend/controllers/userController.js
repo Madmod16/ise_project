@@ -6,26 +6,26 @@ const getMembers = async (req, res) =>{
     try {
         const allMembers = await sequelize.query(`
             SELECT
-                m.MemberID,
-                m.MemberName,
-                m.MemberSurname,
-                m.MemberAge,
+                m.Id,
+                m.Name,
+                m.Surname,
+                m.Age,
                 'student' as type
             FROM member m
-            JOIN universitystudent s ON m.MemberID = s.MemberID
-            
+                     JOIN universitystudent s ON m.Id = s.MemberId
+
             UNION
-            
+
             SELECT
-                m.MemberID,
-                m.MemberName,
-                m.MemberSurname,
-                m.MemberAge,
+                m.Id,
+                m.Name,
+                m.Surname,
+                m.Age,
                 'customer' as type
             FROM member m
-            JOIN privatecustomer c ON m.MemberID = c.MemberID
-            
-            ORDER BY MemberName
+                     JOIN privatecustomer c ON m.Id = c.MemberId
+
+            ORDER BY Name
         `, {
             type: QueryTypes.SELECT
         });
@@ -40,15 +40,15 @@ const getMembers = async (req, res) =>{
 };
 
 const getUserById = async (req, res) => {
-  try {
-    const user = await Member.findByPk(req.params.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    try {
+        const user = await Member.findByPk(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving user', error: error.message });
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Error retrieving user', error: error.message });
-  }
 };
 
 module.exports = { getMembers, getUserById }
