@@ -9,6 +9,8 @@ const paymentRouter = require('./routes/payment')
 const courseRouter = require('./routes/course')
 const programRouter = require('./routes/program')
 const mongodbRouter = require('./routes/mongodb')
+const seedRouter = require("./routes/seed");
+
 
 async function startServer() {
     try {
@@ -33,6 +35,7 @@ const gracefulShutdown = async () => {
 app.use(express.json());
 app.use(cors());
 
+app.use("/seed", seedRouter);
 app.use('/member', memberRouter);
 app.use('/enrollment', enrollmentRouter);
 app.use('/course', courseRouter);

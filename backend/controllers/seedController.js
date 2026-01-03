@@ -106,7 +106,7 @@ async function seedOnStartupRandom({ reset = true } = {}) {
 
     const nextId = makeIdGen();
 
-    // Mengen (kannst du anpassen)
+    // Mengen
     const cfg = {
         programs: 2,
         courses: 4,
