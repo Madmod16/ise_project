@@ -2,16 +2,17 @@ const { Enrollment } = require('../models')
 
 const addEnrollment = async (req, res) => {
     try {
-        const { MemberID, CourseID} = req.body;
+        const { MemberID, CourseID } = req.body;
 
         if (!MemberID || !CourseID) {
             return res.status(400).json({ error: 'MemberID and CourseID are required' });
         }
         
         const newEnrollment = await Enrollment.create({
-            MemberID: MemberID,
-            CourseID: CourseID,
-            EnrollDate: new Date()
+            MemberId: MemberID,
+            CourseId: CourseID,
+            Date: new Date(),
+            Validity: true
         });
 
         res.status(201).json({ 

@@ -54,37 +54,37 @@ db.Payment = require("./Payment")(sequelize, Sequelize);
 
 if (db.Program && db.Course) {
   db.Program.hasMany(db.Course, { foreignKey: "ProgramId", as: "Courses" });
-  db.Course.belongsTo(db.Program, { foreignKey: "Id", as: "Program" });
+  db.Course.belongsTo(db.Program, { foreignKey: "ProgramId", as: "Program" });
 }
 
 if (db.Course && db.Module) {
   db.Course.hasMany(db.Module, { foreignKey: "CourseId", as: "Modules" });
-  db.Module.belongsTo(db.Course, { foreignKey: "Id", as: "Course" });
+  db.Module.belongsTo(db.Course, { foreignKey: "CourseId", as: "Course" });
 }
 
 if (db.Member && db.PrivateCustomer) {
-  db.Member.hasOne(db.PrivateCustomer, { foreignKey: "Id", as: "PrivateCustomer" });
-  db.PrivateCustomer.belongsTo(db.Member, { foreignKey: "Id", as: "Member" });
+  db.Member.hasOne(db.PrivateCustomer, { foreignKey: "MemberId", as: "PrivateCustomer" });
+  db.PrivateCustomer.belongsTo(db.Member, { foreignKey: "MemberId", as: "Member" });
 }
 
 if (db.Member && db.UniversityStudent) {
-  db.Member.hasOne(db.UniversityStudent, { foreignKey: "Id", as: "UniversityStudent" });
-  db.UniversityStudent.belongsTo(db.Member, { foreignKey: "Id", as: "Member" });
+  db.Member.hasOne(db.UniversityStudent, { foreignKey: "MemberId", as: "UniversityStudent" });
+  db.UniversityStudent.belongsTo(db.Member, { foreignKey: "MemberId", as: "Member" });
 }
 
 if (db.Member && db.Enrollment) {
   db.Member.hasMany(db.Enrollment, { foreignKey: "MemberId", as: "Enrollments" });
-  db.Enrollment.belongsTo(db.Member, { foreignKey: "Id", as: "Member" });
+  db.Enrollment.belongsTo(db.Member, { foreignKey: "MemberId", as: "Member" });
 }
 
 if (db.Course && db.Enrollment) {
   db.Course.hasMany(db.Enrollment, { foreignKey: "CourseId", as: "Enrollments" });
-  db.Enrollment.belongsTo(db.Course, { foreignKey: "Id", as: "Course" });
+  db.Enrollment.belongsTo(db.Course, { foreignKey: "CourseId", as: "Course" });
 }
 
 if (db.Enrollment && db.Payment) {
   db.Enrollment.hasOne(db.Payment, { foreignKey: "EnrollmentId", as: "Payment" });
-  db.Payment.belongsTo(db.Enrollment, { foreignKey: "Id", as: "Enrollment" });
+  db.Payment.belongsTo(db.Enrollment, { foreignKey: "EnrollmentId", as: "Enrollment" });
 }
 
 if (db.Tutor && db.Course && db.IsTaughtBy) {

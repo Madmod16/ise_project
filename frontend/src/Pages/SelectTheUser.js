@@ -51,35 +51,35 @@ function SelectTheUser() {
   <div className="members-grid">
     {listOfMembers.map((member) => (
       <div
-        key={member.MemberID}
-        className={`member-card ${selectedOption === member.MemberID ? 'selected' : ''}`}
+        key={member.Id}
+        className={`member-card ${selectedOption === member.Id ? 'selected' : ''}`}
         onClick={() => {
-          handleSelectMember(member.MemberID);
+          handleSelectMember(member.Id);
           setSelectedMember(member);
         }}
       >
         <div className="member-avatar">
           <span className="avatar-initials">
-            {member.MemberName.charAt(0)}{member.MemberSurname.charAt(0)}
+            {member.Name.charAt(0)}{member.Surname.charAt(0)}
           </span>
         </div>
         
         <div className="member-info">
           <h3 className="member-name">
-            {member.MemberName} {member.MemberSurname}
+            {member.Name} {member.Surname}
           </h3>
           <div className="member-details">
             <span className="detail-item">
               <svg className="icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" clipRule="evenodd" />
               </svg>
-              Age {member.MemberAge}
+              Age {member.Age}
             </span>
             <span className="detail-item">
               <svg className="icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" clipRule="evenodd" />
               </svg>
-              ID: {member.MemberID}
+              ID: {member.Id}
             </span>
           </div>
           {member.type && (

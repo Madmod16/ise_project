@@ -56,8 +56,8 @@ function CoursesList() {
       if(noSQLMode){
         await axios.post("http://localhost:3001/mongodb/mongoAddEnrollment",
           {
-            MemberID : member.MemberID,
-            CourseID : course.CourseID,
+            MemberID : member.Id,
+            CourseID : course.Id,
             ProgramID : course.ProgramID,
             Type : member.type,
             Price : course.Price
@@ -65,13 +65,15 @@ function CoursesList() {
         )
       }
       else{
+        console.log(member.Id)
+        console.log(course.Id)
         const responseEnrollment = await axios.post("http://localhost:3001/enrollment",
           {
-            MemberID : member.MemberID,
-            CourseID : course.CourseID
+            MemberID : member.Id,
+            CourseID : course.Id
           }
         )
-        const enrollmentId = await responseEnrollment.data.enrollment.EnrollmentID;
+        const enrollmentId = await responseEnrollment.data.enrollment.Id;
         const responsePayment = await axios.post("http://localhost:3001/payment",
           {
             EnrollmentID : enrollmentId,
@@ -105,26 +107,26 @@ function CoursesList() {
   <div className="program-grid">
     {listOfPrograms.map((program) => (
       <div
-        key={program.ProgramID}
-        className={`program-card ${selectedProgram?.ProgramID === program.ProgramID ? 'selected' : ''}`}
+        key={program.Id}
+        className={`program-card ${selectedProgram?.Id === program.Id ? 'selected' : ''}`}
         onClick={() => handleProgramSelection(program)}
       >
         <div className="program-header">
-          <h3>{program.ProgramName}</h3>
+          <h3>{program.Name}</h3>
           <span className="duration-badge">Duration: {program.Duration}</span>
         </div>
 
         <div className="course-grid">
           {program.Courses.map((course) => (
             <div
-              key={course.CourseID}
-              className={`course-card ${selectedOption?.CourseID === course.CourseID ? 'selected' : ''}`}
+              key={course.Id}
+              className={`course-card ${selectedOption?.Id === course.Id ? 'selected' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleCourseSelection(course);
               }}
             >
-              <h4>{course.CourseName}</h4>
+              <h4>{course.Name}</h4>
               <div className="course-details">
                 <span className="field-tag">{course.Field}</span>
                 <span className="price-tag">${course.Price}</span>

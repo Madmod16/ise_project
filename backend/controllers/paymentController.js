@@ -10,9 +10,9 @@ const addPayment = async (req, res) => {
         }
         
         const newPayment = await Payment.create({
-            EnrollmentID: EnrollmentID,
+            EnrollmentId: EnrollmentID,
             PayDate: new Date(),
-            TotalAmount: (Type === "student") ? Price - (Price * discount) : Price,
+            Amount: (Type === "student") ? Price - (Price * discount) : Price,
             Discount : (Type === "student") ? discount : 0
         });
 
