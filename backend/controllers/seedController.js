@@ -1,8 +1,6 @@
-// controllers/seedController.js
 const db = require("../models");
 const { sequelize } = db;
 
-/* -------------------- helpers -------------------- */
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const shuffle = (arr) => {
@@ -63,7 +61,6 @@ function pickAttr(model, candidates) {
     return null;
 }
 
-/* -------------------- pools -------------------- */
 const FIRST = ["Maria", "Stefan", "Elia", "Anna", "Lukas", "Nina", "Tobias", "Sara", "David", "Mila", "Paul", "Lea"];
 const LAST = ["Kadlec", "Hofer", "Gruber", "Mayer", "Huber", "Bauer", "Wagner", "Leitner", "Novak", "Schmid"];
 
@@ -100,7 +97,6 @@ const MODULE_SUBJECTS = [
     "Advanced topics and patterns",
 ];
 
-/* -------------------- controller -------------------- */
 const seedRandom = async (req, res) => {
     const needed = [
         "Program",
@@ -153,48 +149,39 @@ const seedRandom = async (req, res) => {
     cfg.enrollments = Math.min(cfg.enrollments, cfg.courses);
     const nextId = makeIdGen();
 
-    // PKs
     const ProgramPK = pkAttr(Program);
     const CoursePK = pkAttr(Course);
     const TutorPK = pkAttr(Tutor);
     const MemberPK = pkAttr(Member);
     const EnrollPK = pkAttr(Enrollment);
 
-    // Course attrs
     const CourseProgramFK = pickAttr(Course, ["ProgramID", "ProgramId"]);
     const CourseName = pickAttr(Course, ["CourseName", "Name"]);
 
-    // Tutor attrs
     const TutorNameAttr = pickAttr(Tutor, ["TutorName", "Name"]);
     const TutorSurnameAttr = pickAttr(Tutor, ["TutorSurname", "Surname"]);
     const TutorSupervisorFK = pickAttr(Tutor, ["SupervisorID", "SupervisorId"]);
 
-    // Module attrs
     const ModuleCourseFK = pickAttr(Module, ["CourseID", "CourseId"]);
     const ModuleId = pickAttr(Module, ["Id", "ModuleID", "ModuleId"]);
     const ModuleNameAttr = pickAttr(Module, ["ModuleName", "Name"]);
     const ModuleTopicsAttr = pickAttr(Module, ["TopicsCovered", "Subject"]);
 
-    // Member attrs
     const MemberNameAttr = pickAttr(Member, ["MemberName", "Name"]);
     const MemberSurnameAttr = pickAttr(Member, ["MemberSurname", "Surname"]);
 
-    // Enrollment attrs (FIX: EnrollDate)
     const EnrollMemberFK = pickAttr(Enrollment, ["MemberID", "MemberId"]);
     const EnrollCourseFK = pickAttr(Enrollment, ["CourseID", "CourseId"]);
-    const EnrollDateAttr = pickAttr(Enrollment, ["EnrollDate", "Date"]); // <- IMPORTANT
+    const EnrollDateAttr = pickAttr(Enrollment, ["EnrollDate", "Date"]);
 
-    // Payment attrs
     const PayEnrollFK = pickAttr(Payment, ["EnrollmentID", "EnrollmentId"]);
     const PayAmount = pickAttr(Payment, ["Amount", "TotalAmount"]);
     const PayDiscount = pickAttr(Payment, ["Discount"]);
 
-    // Subtypes
     const UniMemberFK = pickAttr(UniversityStudent, ["MemberID", "MemberId", "Id"]);
     const UniStudentId = pickAttr(UniversityStudent, ["StudentID", "StudentId"]);
     const PrivMemberFK = pickAttr(PrivateCustomer, ["MemberID", "MemberId", "Id"]);
 
-    // IsTaughtBy
     const ITBTutorFK = pickAttr(IsTaughtBy, ["TutorID", "TutorId"]);
     const ITBCourseFK = pickAttr(IsTaughtBy, ["CourseID", "CourseId"]);
 
@@ -228,7 +215,6 @@ const seedRandom = async (req, res) => {
             }
         }
 
-        /* -------- Program -------- */
         const programIds = [];
         for (let i = 0; i < cfg.programs; i++) {
             const data = {
@@ -240,7 +226,6 @@ const seedRandom = async (req, res) => {
             programIds.push(p[ProgramPK]);
         }
 
-        /* -------- Course -------- */
         const courseIds = [];
         for (let i = 0; i < cfg.courses; i++) {
             const data = {
@@ -254,7 +239,6 @@ const seedRandom = async (req, res) => {
             courseIds.push(c[CoursePK]);
         }
 
-        /* -------- Module -------- */
         let moduleCount = 0;
         for (const cId of courseIds) {
             const mCount = randInt(cfg.modulesMin, cfg.modulesMax);
@@ -272,7 +256,6 @@ const seedRandom = async (req, res) => {
             }
         }
 
-        /* -------- Tutor -------- */
         const tutorIds = [];
         for (let i = 0; i < cfg.tutors; i++) {
             const data = {
@@ -287,7 +270,6 @@ const seedRandom = async (req, res) => {
             tutorIds.push(tu[TutorPK]);
         }
 
-        /* -------- IsTaughtBy -------- */
         const taughtPairs = new Set();
         let isTaughtByCount = 0;
         for (const tId of tutorIds) {
@@ -302,7 +284,6 @@ const seedRandom = async (req, res) => {
             }
         }
 
-        /* -------- Member -------- */
         const memberIds = [];
         for (let i = 0; i < cfg.members; i++) {
             const data = {
@@ -315,7 +296,6 @@ const seedRandom = async (req, res) => {
             memberIds.push(m[MemberPK]);
         }
 
-        /* -------- PrivateCustomer / UniversityStudent -------- */
         const shuffledMembers = shuffle(memberIds);
         const nPrivate = Math.floor(cfg.members * cfg.pctPrivateCustomer);
         const nStudent = Math.floor(cfg.members * cfg.pctUniversityStudent);
@@ -347,7 +327,6 @@ const seedRandom = async (req, res) => {
             );
         }
 
-        /* -------- Enrollment (FIXED: EnrollDate) -------- */
         const enrollmentCourseIds = shuffle(courseIds).slice(0, cfg.enrollments);
         const enrollmentIds = [];
         for (let i = 0; i < cfg.enrollments; i++) {
@@ -362,7 +341,6 @@ const seedRandom = async (req, res) => {
             enrollmentIds.push(e[EnrollPK]);
         }
 
-        /* -------- Payment -------- */
         const payEnrollments = shuffle(enrollmentIds).slice(0, Math.floor(enrollmentIds.length * cfg.pctPayments));
         let paymentCount = 0;
         for (const enrollmentId of payEnrollments) {

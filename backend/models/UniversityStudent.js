@@ -2,13 +2,13 @@ module.exports = (sequelize, DataTypes) => {
   const UniversityStudent = sequelize.define(
     "UniversityStudent",
     {
-      MemberID: {
+      MemberId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         references: {
           model: "Member",
-          key: "MemberID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",

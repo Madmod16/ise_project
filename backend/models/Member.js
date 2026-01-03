@@ -2,20 +2,20 @@ module.exports = (sequelize, DataTypes) => {
   const Member = sequelize.define(
     "Member",
     {
-      MemberID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      MemberName: {
+      Name: {
         type: DataTypes.STRING(80),
         allowNull: false,
       },
-      MemberSurname: {
+      Surname: {
         type: DataTypes.STRING(80),
         allowNull: false,
       },
-      MemberAge: {
+      Age: {
         type: DataTypes.INTEGER,
         allowNull: true,
         validate: {

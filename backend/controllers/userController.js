@@ -6,26 +6,26 @@ const getMembers = async (req, res) =>{
     try {
         const allMembers = await sequelize.query(`
             SELECT
-                m.MemberID,
-                m.MemberName,
-                m.MemberSurname,
-                m.MemberAge,
+                m.Id,
+                m.Name,
+                m.Surname,
+                m.Age,
                 'student' as type
             FROM member m
-            JOIN universitystudent s ON m.MemberID = s.MemberID
+            JOIN universitystudent s ON m.Id = s.MemberId
             
             UNION
             
             SELECT
-                m.MemberID,
-                m.MemberName,
-                m.MemberSurname,
-                m.MemberAge,
+                m.Id,
+                m.Name,
+                m.Surname,
+                m.Age,
                 'customer' as type
             FROM member m
-            JOIN privatecustomer c ON m.MemberID = c.MemberID
+            JOIN privatecustomer c ON m.Id = c.MemberId
             
-            ORDER BY MemberName
+            ORDER BY Name
         `, {
             type: QueryTypes.SELECT
         });

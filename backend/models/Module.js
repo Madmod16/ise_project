@@ -2,27 +2,27 @@ module.exports = (sequelize, DataTypes) => {
   const Module = sequelize.define(
     "Module",
     {
-      CourseID: {
+      CourseId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         references: {
           model: "Course",
-          key: "CourseID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      ModuleID: {
+      ModuleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      ModuleName: {
+      Name: {
         type: DataTypes.STRING(80),
         allowNull: false,
       },
-      TopicsCovered: {
+      Subject: {
         type: DataTypes.STRING(255),
         allowNull: false,
       },

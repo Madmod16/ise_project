@@ -2,38 +2,42 @@ module.exports = (sequelize, DataTypes) => {
   const Enrollment = sequelize.define(
     "Enrollment",
     {
-      EnrollmentID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
       },
 
-      MemberID: {
+      MemberId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "Member",
-          key: "MemberID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
 
-      CourseID: {
+      CourseId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "Course",
-          key: "CourseID",
+          key: "Id",
         },
         onDelete: "RESTRICT",
         onUpdate: "CASCADE",
       },
 
-      EnrollDate: {
+      Date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
+      },
+
+      Validity: {
+        type: DataTypes.BOOLEAN,
       },
     },
     {
@@ -43,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ["MemberID", "CourseID"],
+          fields: ["MemberId", "CourseId"],
         },
       ],
     }

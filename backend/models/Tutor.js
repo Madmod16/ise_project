@@ -2,30 +2,29 @@ module.exports = (sequelize, DataTypes) => {
   const Tutor = sequelize.define(
     "Tutor",
     {
-      TutorID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      SupervisorID: {
+      SupervisorId: {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
           model: "Tutor",
-          key: "TutorID",
+          key: "Id",
         },
         onUpdate: "CASCADE",
-        // NOTE: your SQL doesn't specify ON DELETE; default is usually RESTRICT/NO ACTION
       },
-      TutorName: {
+      Name: {
         type: DataTypes.STRING(80),
         allowNull: false,
       },
-      TutorSurname: {
+      Surname: {
         type: DataTypes.STRING(80),
         allowNull: false,
       },
-      Specialisation: {
+      Specialization: {
         type: DataTypes.STRING(80),
         allowNull: true,
       },

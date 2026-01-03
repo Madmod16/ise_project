@@ -2,12 +2,12 @@ module.exports = (sequelize, DataTypes) => {
   const Program = sequelize.define(
     "Program",
     {
-      ProgramID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      ProgramName: {
+      Name: {
         type: DataTypes.STRING(80),
         allowNull: true,
       },

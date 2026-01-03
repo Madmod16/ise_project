@@ -1,8 +1,6 @@
 const { sequelize } = require("../models");
 const { QueryTypes } = require("sequelize");
 
-// POST /modules
-// body: { tutorId, courseId, name, subject }
 const addModuleToCourse = async (req, res) => {
     const tutorId = Number(req.body.tutorId);
     const courseId = Number(req.body.courseId);
@@ -16,7 +14,7 @@ const addModuleToCourse = async (req, res) => {
     }
 
     try {
-        // Precondition: Tutor teaches the Course
+        // Precondition
         const teaches = await sequelize.query(
             `SELECT 1
              FROM IsTaughtBy
@@ -29,7 +27,6 @@ const addModuleToCourse = async (req, res) => {
             return res.status(403).json({ error: "Tutor does not teach this course." });
         }
 
-        // Next Module.Id within this CourseId (composite PK)
         const next = await sequelize.query(
             `SELECT COALESCE(MAX(Id), 0) + 1 AS nextId
              FROM Module
@@ -39,7 +36,7 @@ const addModuleToCourse = async (req, res) => {
 
         const moduleId = next[0].nextId;
 
-        // INSERT = implementation of use case
+        // INSERT-Operation
         await sequelize.query(
             `INSERT INTO Module (CourseId, Id, Name, Subject)
              VALUES (:courseId, :moduleId, :name, :subject)`,
@@ -55,8 +52,6 @@ const addModuleToCourse = async (req, res) => {
     }
 };
 
-// POST /modules/report
-// body: { tutorId, courseId? }
 const getModulesReport = async (req, res) => {
     const tutorId = Number(req.body.tutorId);
     const courseId = req.body.courseId != null ? Number(req.body.courseId) : null;
@@ -66,7 +61,6 @@ const getModulesReport = async (req, res) => {
     }
 
     try {
-        // Recommended: LEFT JOIN so report exists even before adding modules
         const rows = await sequelize.query(
             `SELECT
                  t.Id AS TutorId,

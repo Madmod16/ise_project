@@ -25,28 +25,28 @@ const getAnalyticsReport = async (req, res) => {
         const report = await sequelize.query(`
             SELECT
                 p.Id,
-                p.ProgramName,
-                st.StudentID,
-                m.MemberID,
-            CONCAT(m.MemberName, ' ', m.MemberSurname) AS StudentName,
-            COUNT(DISTINCT c.CourseID) AS CoursesInProgram,
-            GROUP_CONCAT(DISTINCT c.CourseName ORDER BY c.CourseName SEPARATOR ', ') AS CourseList,
-            SUM(pay.TotalAmount) AS TotalProgramIncome
+                p.Name,
+                st.StudentId,
+                m.Id,
+            CONCAT(m.Name, ' ', m.Surname) AS StudentName,
+            COUNT(DISTINCT c.Id) AS CoursesInProgram,
+            GROUP_CONCAT(DISTINCT c.Name ORDER BY c.Name SEPARATOR ', ') AS CourseList,
+            SUM(pay.Amount) AS TotalProgramIncome
             FROM universitystudent AS st
             JOIN member AS m
-                ON m.MemberID = st.MemberID
+                ON m.Id = st.MemberId
             JOIN enrollment AS e
-                ON e.MemberID = m.MemberID
+                ON e.MemberId = m.Id
             JOIN payment AS pay
-                ON pay.EnrollmentID = e.EnrollmentID
+                ON pay.EnrollmentId = e.Id
             JOIN course AS c
-                ON c.CourseID = e.CourseID
+                ON c.Id = e.CourseId
             JOIN program AS p
-                ON p.ProgramID = c.ProgramID
-            WHERE p.ProgramID = :ProgramID
+                ON p.Id = c.ProgramId
+            WHERE p.Id = :ProgramId
             GROUP BY
-                p.ProgramID, p.ProgramName,
-                m.MemberID, m.MemberName, m.MemberSurname
+                p.Id, p.Name,
+                m.Id, m.Name, m.Surname
             ORDER BY CoursesInProgram DESC, StudentName;
         `, {
             replacements: { Id: ProgramId },

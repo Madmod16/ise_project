@@ -2,26 +2,26 @@ module.exports = (sequelize, DataTypes) => {
   const Course = sequelize.define(
     "Course",
     {
-      CourseID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
       },
-      ProgramID: {
+      ProgramId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "Program",
-          key: "ProgramID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      Field: {
+      Name: {
         type: DataTypes.STRING(80),
         allowNull: true,
       },
-      CourseName: {
+      Field: {
         type: DataTypes.STRING(80),
         allowNull: true,
       },

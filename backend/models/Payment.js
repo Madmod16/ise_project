@@ -2,20 +2,20 @@ module.exports = (sequelize, DataTypes) => {
   const Payment = sequelize.define(
     "Payment",
     {
-      PaymentID: {
+      Id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
       },
 
-      EnrollmentID: {
+      EnrollmentId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
         references: {
           model: "Enrollment",
-          key: "EnrollmentID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      TotalAmount: {
+      Amount: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
         validate: {
@@ -50,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         discountNotGreaterThanPrice() {
           if (this.Discount > this.Price) {
-            throw new Error("Discount cannot be greater than Price");
+            throw new Error("Discount cannot be greater than the price");
           }
         },
       },

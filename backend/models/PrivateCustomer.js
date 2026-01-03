@@ -2,13 +2,13 @@ module.exports = (sequelize, DataTypes) => {
   const PrivateCustomer = sequelize.define(
     "PrivateCustomer",
     {
-      MemberID: {
+      MemberId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         primaryKey: true,
         references: {
           model: "Member",
-          key: "MemberID",
+          key: "Id",
         },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(80),
         allowNull: true,
       },
-      CompanyName: {
+      Company: {
         type: DataTypes.STRING(80),
         allowNull: true,
       },
