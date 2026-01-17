@@ -3,10 +3,10 @@ function MemberConvertor(membersArray){
     const members = []
     membersArray.forEach(memberToConvert =>{
         members.push({
-            MemberID : memberToConvert._id,
-            MemberName : memberToConvert.member.firstname,
-            MemberSurname : memberToConvert.member.lastname,
-            MemberAge : memberToConvert.member.age,
+            Id : memberToConvert._id,
+            Name : memberToConvert.member.firstname,
+            Surname : memberToConvert.member.lastname,
+            Age : memberToConvert.member.age,
             type : memberToConvert.type
         })
     })

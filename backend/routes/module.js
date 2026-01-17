@@ -4,5 +4,5 @@ const { addModuleToCourse, getModulesReport } = require("../controllers/moduleCo
 
 router.post("/", addModuleToCourse);
 router.post("/report", getModulesReport);
-
+ 
 module.exports = router;

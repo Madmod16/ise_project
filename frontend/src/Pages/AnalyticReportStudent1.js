@@ -24,7 +24,7 @@ function AnalyticsReportStudent1() {
           }).then((resp)=>{
         const convertedData = ReportConvertor(resp.data);
         setresultsOfReport(convertedData)
-        console.log("The NoSQL mode is used")
+        console.log(selectedProgram)
       })
       }
       else{

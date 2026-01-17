@@ -2,8 +2,8 @@ const db = require("../mongoDB")
 const dbo = db.getDb();
 
 const getAnaliticsReport = async (req, res) => {
-    const { ProgramID } = req.body;
-    let query = { _id: ProgramID };
+    const { ProgramId } = req.body;
+    let query = { _id: ProgramId };
     try {
         const result = await dbo.collection('programs').aggregate([
             { 

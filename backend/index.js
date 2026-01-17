@@ -28,10 +28,9 @@ app.use("/payment", paymentRouter);
 app.use("/program", programRouter);
 app.use("/mongodb", mongodbRouter);
 
-async function startServer() {
+async function startServer() { 
     try {
         await mongodb.connectToServer();
-        console.log("Successfully connected to MongoDB.");
 
         await db.sequelize.sync();
 

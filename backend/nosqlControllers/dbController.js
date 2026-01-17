@@ -1,5 +1,5 @@
 const db = require("../mongoDB")
-const { Member, UniversityStudent, PrivateCustomer, Enrollment, Payment, Program, Course } = require('../models')
+const { Member, UniversityStudent, PrivateCustomer, Enrollment, Payment, Program, Course, Tutor, Module, IsTaughtBy } = require('../models')
 const dbo = db.getDb();
 
 const createCollections = () =>{
@@ -17,6 +17,11 @@ const createCollections = () =>{
         if (err) throw err;
         console.log("Collection programs created!");
     });
+
+    dbo.createCollection("tutors", function(err, res) {
+        if (err) throw err;
+        console.log("Collection tutors created!");
+    });
 }
 
 const checkIfMongoDBIsActive = async (err, res) =>{
@@ -27,9 +32,47 @@ const checkIfMongoDBIsActive = async (err, res) =>{
 
 const migrateMembers = async () =>{
     const membersCollection = db.getDb().collection('members');
-    membersCollection.deleteMany({})
+    await membersCollection.deleteMany({})
     members = {}
     const students = await UniversityStudent.findAll({
+        include : [{
+            model: Member,
+            required: true,
+        }]
+    })
+
+    const students_info = await UniversityStudent.findAll({
+        include : [{
+            model: Member,
+            required: true,
+            include : [{
+            model: Enrollment,
+            required: true,
+                include : [{
+                    model: Payment,
+                    required: true,
+                },
+                {
+                    model: Course,
+                    required: true,
+                    include : [{
+                        model: Program,
+                        required: true
+                    }]
+                }   
+                ],
+            }]
+        }]
+    })
+
+    const customers = await PrivateCustomer.findAll({
+        include : [{
+            model: Member,
+            required: true,
+        }]
+    })
+
+    const customers_info = await PrivateCustomer.findAll({
         include : [{
             model: Member,
             required: true,
@@ -54,83 +97,69 @@ const migrateMembers = async () =>{
     })
 
     const studentData = students.map(s => s.get({ plain: true }));
+    const studentInfoData = students_info.map(s => s.get({ plain: true }));
+    const customersData = customers.map(s => s.get({ plain: true }));
+    const customersInfoData = customers_info.map(s => s.get({ plain: true }));
 
     studentData.forEach(student =>{
-        if(!members[student.MemberID]){
-            members[student.MemberID] = {
-                _id: student.MemberID,
+        if(!members[student.MemberId]){
+            members[student.MemberId] = {
+                _id: student.MemberId,
                 type: "student",
-                member: {firstname: student.Member.MemberName, lastname: student.Member.MemberSurname, age: student.Member.MemberAge},
+                member: {firstname: student.Member.Name, lastname: student.Member.Surname, age: student.Member.Age},
                 student: {student_id: student.StudentID, degree: student.Degree},
                 Enrollments: []
             };
         }
+    })
+
+    studentInfoData.forEach(student =>{
         if(student.Member.Enrollments){
             student.Member.Enrollments.forEach((enrollment) => {
-            members[student.MemberID].Enrollments.push({
-                ProgramID: enrollment.Course.Program.ProgramID,
-                CourseID: enrollment.CourseID,
-                EnrollDate: enrollment.EnrollDate,
+            members[student.MemberId].Enrollments.push({
+                ProgramID: enrollment.Course.Program.Id,
+                CourseID: enrollment.Course.Id,
+                EnrollDate: enrollment.Date,
+                Validity : enrollment.Validity,
                 Payment: {
-                    Amount: enrollment.Payment.TotalAmount,
+                    Amount: enrollment.Payment.Amount,
                     PayDate: enrollment.Payment.PayDate,
                     Discount: enrollment.Payment.Discount
                 }
+                });
             });
-        });
         }
     })
 
-    const customers = await PrivateCustomer.findAll({
-        include : [{
-            model: Member,
-            required: true,
-            include : [{
-            model: Enrollment,
-            required: true,
-                include : [{
-                    model: Payment,
-                    required: true,
-                },
-                {
-                    model: Course,
-                    required: true,
-                    include : [{
-                        model: Program,
-                        required: true
-                    }]
-                }   
-                ],
-            }]
-        }]
-    })
-
-    const customersData = customers.map(s => s.get({ plain: true }));
     customersData.forEach(customer =>{
-        if(!members[customer.MemberID]){
-            members[customer.MemberID] = {
-                _id: customer.MemberID,
+        if(!members[customer.Member.Id]){
+            members[customer.Member.Id] = {
+                _id: customer.Member.Id,
                 type: "customer",
-                member: {firstname: customer.Member.MemberName, lastname: customer.Member.MemberSurname, age: customer.Member.MemberAge},
-                customer: {company_name: customer.CompanyName, occupation: customer.Occupation},
+                member: {firstname: customer.Member.Name, lastname: customer.Member.Surname, age: customer.Member.Age},
+                customer: {company_name: customer.Company, occupation: customer.Occupation},
                 Enrollments: []
             };
         }
-        if(customer.Member.Enrollments){
+    })
+
+    customersInfoData.forEach(customer =>{
+         if(customer.Member.Enrollments){
             customer.Member.Enrollments.forEach((enrollment) => {
-            members[customer.MemberID].Enrollments.push({
-                ProgramID: enrollment.Course.Program.ProgramID,
-                CourseID: enrollment.CourseID,
-                EnrollDate: enrollment.EnrollDate,
+            members[customer.Id].Enrollments.push({
+                ProgramID: enrollment.Course.Program.Id,
+                CourseID: enrollment.Course.Id,
+                EnrollDate: enrollment.Date,
+                Validity : enrollment.Validity,
                 Payment: {
-                    Amount: enrollment.Payment.TotalAmount,
+                    Amount: enrollment.Payment.Amount,
                     PayDate: enrollment.Payment.PayDate}
             });
         });
         }
     })
 
-    membersCollection.insertMany(Object.values(members), (err, res) => {
+    await membersCollection.insertMany(Object.values(members), (err, res) => {
         if (err) throw err;
         console.log('Data migrated to MongoDB');
     });
@@ -138,8 +167,9 @@ const migrateMembers = async () =>{
 
 const migrateProgram = async () =>{
     const membersCollection = db.getDb().collection('programs');
-    membersCollection.deleteMany({})
+    await membersCollection.deleteMany({})
     mongo_programs = {}
+
     const programs = await Program.findAll({})
     const programsData = programs.map(s => s.get({ plain: true }));
 
@@ -147,25 +177,25 @@ const migrateProgram = async () =>{
     const coursesData = courses.map(s => s.get({ plain: true }));
 
     programsData.forEach(program =>{
-        if(!mongo_programs[program.ProgramID]){
-            mongo_programs[program.ProgramID] = {
-                _id: program.ProgramID,
-                program_name: program.ProgramName,
+        if(!mongo_programs[program.Id]){
+            mongo_programs[program.Id] = {
+                _id: program.Id,
+                program_name: program.Name,
                 duration: program.Duration,
                 courses : []
             };
 
             coursesData.forEach(course =>{
-            if(course.ProgramID === program.ProgramID){
-            mongo_programs[program.ProgramID].courses.push({
-                CourseID : course.CourseID
+            if(course.ProgramId === program.Id){
+            mongo_programs[program.Id].courses.push({
+                CourseID : course.Id
                     })
                 }
             })
         }
     })
 
-    membersCollection.insertMany(Object.values(mongo_programs), (err, res) => {
+    await membersCollection.insertMany(Object.values(mongo_programs), (err, res) => {
         if (err) throw err;
         console.log('Data migrated to MongoDB');
     });
@@ -173,28 +203,88 @@ const migrateProgram = async () =>{
 
 const migrateCourses = async () =>{
     const membersCollection = db.getDb().collection('courses');
-    membersCollection.deleteMany({})
+    await membersCollection.deleteMany({})
     mongo_courses = {}
-    const courses = await Course.findAll({})
+    const courses = await Course.findAll({
+        include : [
+            {
+                model : Module,
+                required: true
+            }
+        ]
+    })
 
     const coursesData = courses.map(s => s.get({ plain: true }));
 
     coursesData.forEach(course =>{
-        if(!mongo_courses[course.CourseID]){
-            mongo_courses[course.CourseID] = {
-                _id: course.CourseID,
-                program_id: course.ProgramID,
-                course_name: course.CourseName,
+        if(!mongo_courses[course.Id]){
+            mongo_courses[course.Id] = {
+                _id: course.Id,
+                program_id: course.ProgramId,
+                course_name: course.Name,
                 Field: course.Field,
-                Price: course.Price
+                Price: course.Price,
+                Modules: []
             };
+        }
+        if(course.Modules){
+            course.Modules.forEach((module) => {
+                mongo_courses[course.Id].Modules.push({
+                    _id : module.ModuleId,
+                    name : module.Name,
+                    subject : module.Subject
+                })
+            })
         }
     })
 
-    membersCollection.insertMany(Object.values(mongo_courses), (err, res) => {
+    await membersCollection.insertMany(Object.values(mongo_courses), (err, res) => {
         if (err) throw err;
         console.log('Data migrated to MongoDB');
     });
 }
 
-module.exports = {createCollections, migrateMembers, migrateProgram, migrateCourses, checkIfMongoDBIsActive}
+const migrateTutors = async () =>{
+    const tutorsCollection = db.getDb().collection('tutors');
+    tutorsCollection.deleteMany({})
+    mongo_tutors = {}
+
+    const tutors = await Tutor.findAll({
+        include : [
+        {
+            model: Course,
+            as: "Courses",
+        }
+    ]
+    })
+
+    const tutorsData = tutors.map(t => t.get({ plain: true }));
+
+    tutorsData.forEach(tutuor =>{
+        if(!mongo_tutors[tutuor.Id]){
+            mongo_tutors[tutuor.Id] = {
+                _id: tutuor.Id,
+                supervisor_id: tutuor.SupervisorId,
+                Name: tutuor.Name,
+                Surname: tutuor.Surname,
+                Specialization: tutuor.Specialization,
+                Accreditation : tutuor.Accreditation,
+                Courses : []
+            };
+        }
+        if(tutuor.Courses){
+        tutuor.Courses.forEach((course) => {
+            mongo_tutors[tutuor.Id].Courses.push({
+                    CourseID : course.Id
+                });
+            });
+        }
+    })
+
+    tutorsCollection.insertMany(Object.values(mongo_tutors), (err, res) => {
+        if (err) throw err;
+        console.log('Data migrated to MongoDB');
+    });
+}
+
+module.exports = {createCollections, migrateMembers, migrateProgram, migrateCourses, checkIfMongoDBIsActive, migrateTutors}

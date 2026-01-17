@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 validate: {
-                    min: 1, // Duration > 0
+                    min: 1,
                 },
             },
         },

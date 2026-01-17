@@ -41,9 +41,7 @@ function CoursesList() {
 
   const handleMigrateDB = async () => {
   try {
-      await axios.get("http://localhost:3001/mongodb/migrateMembers");
-      await axios.get("http://localhost:3001/mongodb/migrateCourses");
-      await axios.get("http://localhost:3001/mongodb/migratePrograms");
+      await axios.get("http://localhost:3001/mongodb/migrateAll");
       alert("Database migrated successfully!");
     } catch (error) {
       console.error("Migration failed:", error);
@@ -57,16 +55,14 @@ function CoursesList() {
         await axios.post("http://localhost:3001/mongodb/mongoAddEnrollment",
           {
             MemberID : member.Id,
-            CourseID : course.Id,
-            ProgramID : course.ProgramID,
+            CourseID : course.CourseID,
+            ProgramID : course.Id,
             Type : member.type,
             Price : course.Price
           }
         )
       }
       else{
-        console.log(member.Id)
-        console.log(course.Id)
         const responseEnrollment = await axios.post("http://localhost:3001/enrollment",
           {
             MemberID : member.Id,

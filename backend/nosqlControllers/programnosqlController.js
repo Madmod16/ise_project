@@ -27,7 +27,7 @@ const getMongoPrograms = async (req, res) =>{
 
 const addEnrollment = async (req, res) => {
     try {
-        const { MemberID, CourseID , ProgramID, Type, Price } = req.body;
+        const { MemberID, CourseID , ProgramID, Type, Price} = req.body;
         const date = new Date()
         const dateString = date.toISOString().split('T')[0]
         const discount = 0.65
@@ -40,6 +40,7 @@ const addEnrollment = async (req, res) => {
             ProgramID: ProgramID,
             CourseID: CourseID,
             EnrollDate: dateString,
+            Validity: true,
             Payment: {
                 Amount: (Type === "student") ? Price - (Price * discount) : Price,
                 PayDate: dateString,
