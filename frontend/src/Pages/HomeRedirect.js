@@ -22,6 +22,14 @@ function HomeRedirect() {
                 >
                     Select The User
                 </button>
+
+                <button
+                    className="home-btn migration"
+                    onClick={() => navigate("/")}
+                >
+                    Migrate the DB
+                </button>
+
             </div>
         </div>
     );

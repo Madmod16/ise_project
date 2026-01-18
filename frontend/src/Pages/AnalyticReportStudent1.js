@@ -18,6 +18,7 @@ function AnalyticsReportStudent1() {
     }, [])
 
     useEffect(() =>{
+      if (noSQLMode === null) return;
       if(noSQLMode){
         axios.post("http://localhost:3001/mongodb/mongoReport", {
             ProgramId : selectedProgram,

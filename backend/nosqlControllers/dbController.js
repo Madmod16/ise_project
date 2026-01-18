@@ -26,8 +26,8 @@ const createCollections = () =>{
 
 const checkIfMongoDBIsActive = async (err, res) =>{
     const record = await dbo.collection("members").findOne();
-    res.status(200).json(record); 
-    return record === null ? false : true
+    const result = record === null ? false : true
+    res.status(200).json(result);
 }
 
 const migrateMembers = async () =>{
@@ -210,6 +210,10 @@ const migrateCourses = async () =>{
             {
                 model : Module,
                 required: true
+            },
+            {
+                model: Tutor,
+                as: "Tutors",
             }
         ]
     })
@@ -224,7 +228,8 @@ const migrateCourses = async () =>{
                 course_name: course.Name,
                 Field: course.Field,
                 Price: course.Price,
-                Modules: []
+                Modules: [],
+                Tutors: []
             };
         }
         if(course.Modules){
@@ -235,6 +240,13 @@ const migrateCourses = async () =>{
                     subject : module.Subject
                 })
             })
+        }
+        if(course.Tutors){
+        course.Tutors.forEach((tutor) => {
+            mongo_courses[course.Id].Tutors.push({
+                    tutor_id : tutor.Id
+                });
+            });
         }
     })
 

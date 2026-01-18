@@ -17,6 +17,16 @@ function HomeRedirect() {
     const [seeding, setSeeding] = useState(false);
     const [seedMsg, setSeedMsg] = useState("");
 
+    const handleMigrateDB = async () => {
+    try {
+        await axios.get("http://localhost:3001/mongodb/migrateAll");
+        alert("Database migrated successfully!");
+        } catch (error) {
+        console.error("Migration failed:", error);
+        alert("Migration failed. Check console for details.");
+        }
+    };
+
     const runSeed = async () => {
         const ok = window.confirm(
             "Replace existing data with randomized import?\nThis will delete current data."
@@ -65,7 +75,7 @@ function HomeRedirect() {
                         color: "white",
                         cursor: seeding ? "not-allowed" : "pointer",
                         minWidth: "260px",
-                        opacity: seeding ? 0.7 : 1,
+                        opacity: seeding ? 0.1 : 1,
                     }}
                 >
                     {seeding ? "Importing..." : "Import Random Data"}
@@ -105,6 +115,22 @@ function HomeRedirect() {
                     }}
                 >
                     Select The User
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleMigrateDB}
+                    style={{
+                        padding: "0.9rem 1.4rem",
+                        borderRadius: "10px",
+                        border: "1px solid #d1d5db",
+                        background: "#0ed57f",
+                        color: "#111827",
+                        cursor: "pointer",
+                        minWidth: "260px",
+                    }}
+                >
+                    MigrateDB
                 </button>
             </div>
         </div>

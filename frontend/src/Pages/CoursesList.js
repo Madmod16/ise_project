@@ -16,10 +16,12 @@ function CoursesList() {
   useEffect(() =>{
     axios.get("http://localhost:3001/mongodb/check").then((resp)=>{
       setNoSQLMode(resp.data)
+      
     })
   }, [])
 
   useEffect(() =>{
+    if (noSQLMode === null) return;
     if(noSQLMode){
       axios.get("http://localhost:3001/mongodb/mongoPrograms").then((resp)=>{
       const convertedData = ProgramConvertor(resp.data);
@@ -96,7 +98,7 @@ function CoursesList() {
   return ( 
   <div className="member-selection-container">
   <div className="member-header">
-    <h3>{selectedMember.MemberSurname} {selectedMember.MemberName}</h3>
+    <h3>{selectedMember.Surname} {selectedMember.Name}</h3>
   </div>
 
   <h2 className="section-title">Programs</h2>

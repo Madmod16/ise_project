@@ -24,7 +24,7 @@ function SelectTheUser() {
   }, [])
 
   useEffect(() =>{
-    console.log("The NoSQL mode is not used")
+    if (noSQLMode === null) return;
     if(noSQLMode){
       axios.get("http://localhost:3001/mongodb/mongoMember").then((resp)=>{
       const convertedData = MemberConvertor(resp.data);
