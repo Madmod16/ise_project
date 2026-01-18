@@ -241,13 +241,6 @@ const migrateCourses = async () =>{
                 })
             })
         }
-        if(course.Tutors){
-        course.Tutors.forEach((tutor) => {
-            mongo_courses[course.Id].Tutors.push({
-                    tutor_id : tutor.Id
-                });
-            });
-        }
     })
 
     await membersCollection.insertMany(Object.values(mongo_courses), (err, res) => {

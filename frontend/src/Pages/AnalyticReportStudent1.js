@@ -68,13 +68,13 @@ function AnalyticsReportStudent1() {
             </div>
             <div className="stat-item">
               <span className="stat-label">Total Income</span>
-              <span className="stat-value income">${report.TotalProgramIncome}</span>
+              <span className="stat-value income">${report.TotalProgramIncome.toFixed(2)}</span>
             </div>
           </div>
           
           <div className="courses-section">
             <strong>Courses:</strong>
-            <p className="course-list">{report.CourseList}</p>
+            <p className="course-list">{report.CourseList.join(", ")}</p>
           </div>
         </div>
       </div>
