@@ -24,7 +24,7 @@ function SelectTheUser() {
   }, [])
 
   useEffect(() =>{
-    if (noSQLMode === null) return;
+    console.log("The NoSQL mode is not used")
     if(noSQLMode){
       axios.get("http://localhost:3001/mongodb/mongoMember").then((resp)=>{
       const convertedData = MemberConvertor(resp.data);
@@ -46,8 +46,17 @@ function SelectTheUser() {
   
   return ( 
   <div className="member-selection-container">
+    <div className="mode-pill" aria-live="polite">
+    {noSQLMode === null ? (
+      <span className="mode-chip loading">Mode: …</span>
+    ) : noSQLMode ? (
+      <span className="mode-chip nosql">Mode: NoSQL</span>
+    ) : (
+      <span className="mode-chip sql">Mode: SQL</span>
+    )}
+  </div>
   <h2 className="selection-title">Select a Member</h2>
-  
+
   <div className="members-grid">
     {listOfMembers.map((member) => (
       <div
@@ -101,14 +110,14 @@ function SelectTheUser() {
   {selectedOption && (
     <div className="selection-info">
       <div className="selection-content">
-        <div className="selection-icon">
-          <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" clipRule="evenodd" />
-          </svg>
+        <div className="member-avatar">
+          <span className="avatar-initials">
+            {selectedMember.Name.charAt(0)}{selectedMember.Surname.charAt(0)}
+          </span>
         </div>
         <div className="selection-text">
           <p className="selection-label">Selected Member</p>
-          <p className="selection-id">ID: {selectedOption}</p>
+          <p className="selection-id">{selectedMember.Name + " " + selectedMember.Surname}</p>
         </div>
         <button className="continue-btn" onClick={handleProceed}>
           Continue

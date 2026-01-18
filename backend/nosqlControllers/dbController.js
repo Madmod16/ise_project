@@ -293,6 +293,8 @@ const migrateTutors = async () =>{
         }
     })
 
+    console.log(mongo_tutors)
+
     tutorsCollection.insertMany(Object.values(mongo_tutors), (err, res) => {
         if (err) throw err;
         console.log('Data migrated to MongoDB');

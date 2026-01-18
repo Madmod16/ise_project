@@ -285,3 +285,75 @@
     min-width: auto;
   }
 }
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.mode-pill {
+  display: flex;
+  align-items: center;
+}
+
+.mode-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: #2d3748;
+  user-select: none;
+}
+
+.mode-chip::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.mode-chip.nosql {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #e6fffa 0%, #ffffff 100%);
+}
+
+.mode-chip.nosql::before {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mode-chip.sql {
+  border-color: #c7d2fe;
+  background: linear-gradient(135deg, #f7faff 0%, #ffffff 100%);
+}
+
+.mode-chip.sql::before {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.mode-chip.loading {
+  color: #718096;
+}
+
+.mode-chip.loading::before {
+  background: #cbd5e0;
+}

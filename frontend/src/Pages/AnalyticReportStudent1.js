@@ -35,8 +35,17 @@ function AnalyticsReportStudent1() {
       }
     }, [noSQLMode])
 
-    return ( 
+    return (   
     <div className="analytics-container">
+    <div className="mode-pill" aria-live="polite">
+        {noSQLMode === null ? (
+          <span className="mode-chip loading">Mode: …</span>
+        ) : noSQLMode ? (
+          <span className="mode-chip nosql">Mode: NoSQL</span>
+        ) : (
+          <span className="mode-chip sql">Mode: SQL</span>
+        )}
+    </div> 
         <h2 className="report-title">Analytics Report</h2>
         <div className="report-grid">
         {resultsOfReport.map((report) => (

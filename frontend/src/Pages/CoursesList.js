@@ -8,6 +8,7 @@ function CoursesList() {
   const [listOfPrograms, setlistOfProgram] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
   const [noSQLMode, setNoSQLMode] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,6 +82,9 @@ function CoursesList() {
         )
       }
       
+       setSuccessMessage(`${member.type === "student" ? "Student" : "Member"} has successfully begun attending the Course`);
+       setTimeout(() => setSuccessMessage(""), 2500);
+
     } catch (error) {
       console.error("Enrollment failed:", error)
     }
@@ -97,8 +101,23 @@ function CoursesList() {
 
   return ( 
   <div className="member-selection-container">
+    <div className="mode-pill" aria-live="polite">
+    {noSQLMode === null ? (
+      <span className="mode-chip loading">Mode: …</span>
+    ) : noSQLMode ? (
+      <span className="mode-chip nosql">Mode: NoSQL</span>
+    ) : (
+      <span className="mode-chip sql">Mode: SQL</span>
+    )}
+  </div> 
   <div className="member-header">
     <h3>{selectedMember.Surname} {selectedMember.Name}</h3>
+    {successMessage && (
+    <div className="toast-success" role="status" aria-live="polite">
+      <div className="toast-icon">✓</div>
+      <div className="toast-text">{successMessage}</div>
+    </div>
+    )}
   </div>
 
   <h2 className="section-title">Programs</h2>
@@ -118,8 +137,12 @@ function CoursesList() {
         <div className="course-grid">
           {program.Courses.map((course) => (
             <div
-              key={course.Id}
-              className={`course-card ${selectedOption?.Id === course.Id ? 'selected' : ''}`}
+              key={course.CourseID ?? course.Id}
+              className={`course-card ${
+                ((selectedOption?.CourseID ?? selectedOption?.Id) === (course.CourseID ?? course.Id))
+                ? 'selected'
+                : ''
+                }`}
               onClick={(e) => {
                 e.stopPropagation();
                 handleCourseSelection(course);
@@ -147,13 +170,6 @@ function CoursesList() {
       </div>
     </div>
   )}
-
-  <div className="migrate-db-container">
-  <button className="migrate-db-btn" onClick={handleMigrateDB}>
-    Migrate DB
-  </button>
-  </div>
-
 
   {selectedProgram && (
     <div className="selection-analytics-report">
