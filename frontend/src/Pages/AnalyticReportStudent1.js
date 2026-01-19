@@ -74,7 +74,7 @@ function AnalyticsReportStudent1() {
           
           <div className="courses-section">
             <strong>Courses:</strong>
-            <p className="course-list">{report.CourseList.join(", ")}</p>
+            <p className="course-list">{noSQLMode ? report.CourseList.join(", ")  :  report.CourseList}</p>
           </div>
         </div>
       </div>
