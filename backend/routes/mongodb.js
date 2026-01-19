@@ -4,11 +4,13 @@ const { createCollections, migrateMembers, migrateProgram, migrateCourses, check
 const { getMongoMembers } = require('../nosqlControllers/membernosqlController');
 const { getMongoPrograms, addEnrollment } = require('../nosqlControllers/programnosqlController');
 const { getAnaliticsReport } = require('../nosqlControllers/reportnosqlController');
+const { getMongoTutors } = require('../nosqlControllers/tutornosqlController');
 
 router.get('/', createCollections);
 router.get('/check', checkIfMongoDBIsActive);
 router.get('/mongoMember', getMongoMembers);
 router.get('/mongoPrograms', getMongoPrograms)
+router.get('/mongoTutors', getMongoTutors)
 router.post('/mongoAddEnrollment', addEnrollment)
 router.post('/mongoReport', getAnaliticsReport)
 router.get("/migrateAll", async (req, res) => {

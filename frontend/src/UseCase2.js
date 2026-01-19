@@ -13,287 +13,197 @@ function initialsFrom(name, surname) {
 function TutorModuleUseCase() {
     const [tutors, setTutors] = useState([]);
     const [activeTutorId, setActiveTutorId] = useState(null);
-
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
-
     const [showAddModule, setShowAddModule] = useState(false);
     const [moduleName, setModuleName] = useState("");
     const [moduleSubject, setModuleSubject] = useState("");
-
     const [reportRows, setReportRows] = useState([]);
 
-    const [seeding, setSeeding] = useState(false);
-    const [seedMsg, setSeedMsg] = useState("");
+    const [noSQLMode, setNoSQLMode] = useState(null);
+
+    // Mode Check
+    useEffect(() => {
+        axios.get(`${API}/mongodb/check`).then((resp) => {
+            setNoSQLMode(resp.data);
+        });
+    }, []);
 
     const activeTutor = useMemo(
-        () => tutors.find((t) => t.Id === activeTutorId) || null,
+        () => tutors.find((t) => (t.Id || t._id) === activeTutorId) || null,
         [tutors, activeTutorId]
     );
 
     const reloadTutors = async () => {
-        const resp = await axios.get(`${API}/tutors`);
+        const endpoint = noSQLMode ? `${API}/mongodb/tutors` : `${API}/tutors`;
+        const resp = await axios.get(endpoint);
         setTutors(resp.data);
     };
 
     useEffect(() => {
-        reloadTutors().catch((err) => console.error("GET /tutors failed:", err));
-    }, []);
-
-    const runSeed = async () => {
-        const ok = window.confirm(
-            "Replace existing data with randomized import?\nThis will delete current data."
-        );
-        if (!ok) return;
-
-        setSeeding(true);
-        setSeedMsg("");
-
-        try {
-            await axios.post(`${API}/seed`, {}); // Backend: POST /seed => reset+random seed
-
-            setActiveTutorId(null);
-            setCourses([]);
-            setSelectedCourse(null);
-            setShowAddModule(false);
-            setReportRows([]);
-            setModuleName("");
-            setModuleSubject("");
-
-            await reloadTutors();
-            setSeedMsg("Data import finished.");
-        } catch (err) {
-            setSeedMsg(err?.response?.data?.error || "Seed failed");
-            console.error("POST /seed failed:", err);
-        } finally {
-            setSeeding(false);
+        if (noSQLMode !== null) {
+            reloadTutors().catch((err) => console.error("Tutor fetch failed:", err));
         }
-    };
+    }, [noSQLMode]);
 
     const toggleTutor = async (tutor) => {
-        const isSame = tutor.Id === activeTutorId;
+        const tId = tutor.Id || tutor._id;
+        const isSame = tId === activeTutorId;
 
         if (isSame) {
             setActiveTutorId(null);
             setCourses([]);
-            setSelectedCourse(null);
-            setShowAddModule(false);
             setReportRows([]);
             return;
         }
 
-        setActiveTutorId(tutor.Id);
+        setActiveTutorId(tId);
         setSelectedCourse(null);
         setShowAddModule(false);
-        setReportRows([]);
-        setModuleName("");
-        setModuleSubject("");
 
         try {
-            const resp = await axios.get(`${API}/tutors/${tutor.Id}/courses`);
+            // MongoDB endpoint
+            const endpoint = noSQLMode
+                ? `${API}/mongodb/tutors/${tId}/courses`
+                : `${API}/tutors/${tId}/courses`;
+            const resp = await axios.get(endpoint);
             setCourses(resp.data);
         } catch (err) {
-            console.error("GET /tutors/:id/courses failed:", err);
+            console.error("Course fetch failed:", err);
             setCourses([]);
         }
     };
 
     const fetchReport = async (tutorId, courseId) => {
-        const reportResp = await axios.post(`${API}/modules/report`, {
-            tutorId,
-            courseId,
-        });
+        // Embedding
+        const endpoint = noSQLMode
+            ? `${API}/mongodb/modules/report`
+            : `${API}/modules/report`;
+
+        const reportResp = await axios.post(endpoint, { tutorId, courseId });
         setReportRows(reportResp.data);
     };
 
     const handleAddModule = async () => {
-        if (!activeTutor || !selectedCourse || !moduleName || !moduleSubject) {
-            alert("Select tutor + course and enter module name + subject.");
-            return;
-        }
+        if (!activeTutor || !selectedCourse || !moduleName || !moduleSubject) return;
+
+        const tId = activeTutor.Id || activeTutor._id;
+        const cId = selectedCourse.CourseId || selectedCourse._id;
 
         try {
-            await axios.post(`${API}/modules`, {
-                tutorId: activeTutor.Id,
-                courseId: selectedCourse.CourseId,
+            const endpoint = noSQLMode ? `${API}/mongodb/modules` : `${API}/modules`;
+            await axios.post(endpoint, {
+                tutorId: tId,
+                courseId: cId,
                 name: moduleName,
                 subject: moduleSubject,
             });
 
-            await fetchReport(activeTutor.Id, selectedCourse.CourseId);
-
+            await fetchReport(tId, cId);
             setModuleName("");
             setModuleSubject("");
             setShowAddModule(false);
         } catch (err) {
-            console.error("Add module failed:", err);
-            alert(err?.response?.data?.error || "Add module failed");
+            alert("Add module failed");
         }
     };
 
     const onSelectCourse = async (c) => {
         setSelectedCourse(c);
-        setShowAddModule(false);
-
+        const cId = c.CourseId || c._id;
         try {
-            await fetchReport(activeTutorId, c.CourseId);
+            await fetchReport(activeTutorId, cId);
         } catch (err) {
-            console.error("Report failed:", err);
             setReportRows([]);
         }
     };
 
     return (
         <div className="tm-container">
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    marginBottom: "1.5rem"
-                }}
-            >
-                <h2 className="tm-title" style={{margin: 0}}>Tutors</h2>
-
-
+            {/* Mode Indicator */}
+            <div className="mode-pill">
+                {noSQLMode === null ? (
+                    <span className="mode-chip loading">Mode: …</span>
+                ) : noSQLMode ? (
+                    <span className="mode-chip nosql">Mode: NoSQL</span>
+                ) : (
+                    <span className="mode-chip sql">Mode: SQL</span>
+                )}
             </div>
-            <div className="tm-tutor-list">
-                {tutors.map((t) => {
-                    const active = t.Id === activeTutorId;
 
-                    return (
-                        <div key={t.Id} className={`tm-tutor-card ${active ? "tm-tutor-card--active" : ""}`}>
-                            <div className="tm-tutor-head" onClick={() => toggleTutor(t)}>
-                                <div className="tm-avatar" aria-hidden="true">
-                                    <div className="tm-avatar-initials">{initialsFrom(t.Name, t.Surname)}</div>
-                                </div>
+                <div className="tm-tutor-list">
+                    {tutors.map((t) => {
+                        const tId = t.Id || t._id;
+                        const active = tId === activeTutorId;
 
-                                <div className="tm-tutor-main">
-                                    <h3 className="tm-tutor-name">
-                                        {t.Surname} {t.Name}
-                                    </h3>
-                                    <div className="tm-tutor-meta">Specialization: {t.Specialization || "-"}</div>
-                                </div>
-
-                                <div className="tm-badge"> Accreditation: {t.Accreditation || "-"} </div>
-                            </div>
-
-                            {active && (
-                                <div className="tm-expand">
-                                    <div className="tm-courses-bar">
-                                        <h4 className="tm-subtitle">Tutor’s Courses</h4>
+                        return (
+                            <div key={tId} className={`tm-tutor-card ${active ? "tm-tutor-card--active" : ""}`}>
+                                <div className="tm-tutor-head" onClick={() => toggleTutor(t)}>
+                                    <div className="tm-avatar">
+                                        <div className="tm-avatar-initials">{initialsFrom(t.Name, t.Surname)}</div>
                                     </div>
+                                    <div className="tm-tutor-main">
+                                        <h3 className="tm-tutor-name">{t.Surname} {t.Name}</h3>
+                                        <div className="tm-tutor-meta">Specialization: {t.Specialization}</div>
+                                    </div>
+                                </div>
 
-                                    <div className="tm-course-grid">
-                                        {courses.map((c) => {
-                                            const sel = selectedCourse?.CourseId === c.CourseId;
-                                            return (
-                                                <div
-                                                    key={c.CourseId}
-                                                    className={`tm-course-card ${sel ? "tm-course-card--selected" : ""}`}
-                                                    onClick={() => onSelectCourse(c)}
-                                                >
-                                                    <div className="tm-course-head">
-                                                        <div className="tm-course-title">{c.CourseName}</div>
-
-                                                        <button
-                                                            className="tm-btn tm-btn-primary tm-course-add"
-                                                            type="button"
-                                                            onClick={(e) => {
+                                {active && (
+                                    <div className="tm-expand">
+                                        <div className="tm-course-grid">
+                                            {courses.map((c) => {
+                                                const currCId = c.CourseId || c._id;
+                                                const sel = (selectedCourse?.CourseId || selectedCourse?._id) === currCId;
+                                                return (
+                                                    <div key={currCId}
+                                                         className={`tm-course-card ${sel ? "tm-course-card--selected" : ""}`}
+                                                         onClick={() => onSelectCourse(c)}>
+                                                        <div className="tm-course-head">
+                                                            <div
+                                                                className="tm-course-title">{c.CourseName || c.name}</div>
+                                                            <button className="tm-btn tm-btn-primary" onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setSelectedCourse(c);
                                                                 setShowAddModule(true);
-                                                            }}
-                                                            title="Add module"
-                                                        >
-                                                            Add Module
-                                                        </button>
+                                                            }}>
+                                                                Add Module
+                                                            </button>
+                                                        </div>
                                                     </div>
-
-                                                    <div className="tm-course-meta">
-                                                        <span className="tm-pill">{c.Field || "-"}</span>
-                                                        <span className="tm-pill">€ {c.Price}</span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {selectedCourse && showAddModule && (
-                                        <div className="tm-addbox">
-                                            <div className="tm-addbox-title">Add module
-                                                to: {selectedCourse.CourseName}</div>
-
-                                            <div className="tm-form">
-                                                <div className="tm-field">
-                                                    <div className="tm-label">Module Name</div>
-                                                    <input
-                                                        className="tm-input"
-                                                        value={moduleName}
-                                                        onChange={(e) => setModuleName(e.target.value)}
-                                                        placeholder="e.g. Cleaning Data with SQL"
-                                                    />
-                                                </div>
-
-                                                <div className="tm-field">
-                                                    <div className="tm-label">Module Subject</div>
-                                                    <input
-                                                        className="tm-input"
-                                                        value={moduleSubject}
-                                                        onChange={(e) => setModuleSubject(e.target.value)}
-                                                        placeholder="e.g. Methods to structure information"
-                                                    />
-                                                </div>
-
-                                                <button className="tm-btn tm-btn-primary" onClick={handleAddModule}
-                                                        type="button">
-                                                    Save
-                                                </button>
-                                            </div>
+                                                );
+                                            })}
                                         </div>
-                                    )}
-
-                                    {reportRows.length > 0 && (
-                                        <div className="tm-report">
-                                            <div style={{fontWeight: 900, marginBottom: "0.65rem", color: "#111827"}}>
-                                                Analytics Report (Modules)
-                                            </div>
-
-                                            <table className="tm-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Tutor</th>
-                                                    <th>Course</th>
-                                                    <th>ModuleId</th>
-                                                    <th>ModuleName</th>
-                                                    <th>ModuleSubject</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {reportRows.map((r, idx) => (
-                                                    <tr key={idx}>
-                                                        <td>
-                                                            {r.TutorSurname} {r.TutorName}
-                                                        </td>
-                                                        <td>{r.CourseName}</td>
-                                                        <td>{r.ModuleId ?? "-"}</td>
-                                                        <td>{r.ModuleName ?? "-"}</td>
-                                                        <td>{r.ModuleSubject ?? "-"}</td>
+                                        {/* ... rest of the table rendering logic ... */}
+                                        {reportRows.length > 0 && (
+                                            <div className="tm-report">
+                                                <table className="tm-table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Tutor</th>
+                                                        <th>Course</th>
+                                                        <th>Module Name</th>
                                                     </tr>
-                                                ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                                                    </thead>
+                                                    <tbody>
+                                                    {reportRows.map((r, idx) => (
+                                                        <tr key={idx}>
+                                                            <td>{r.TutorSurname || r.surname} {r.TutorName || r.name}</td>
+                                                            <td>{r.CourseName || r.course_name}</td>
+                                                            <td>{r.ModuleName || r.module_name}</td>
+                                                        </tr>
+                                                    ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
-        </div>
-    );
-}
+            );
+            }
 
-export default TutorModuleUseCase;
+            export default TutorModuleUseCase;

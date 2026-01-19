@@ -204,7 +204,7 @@
 .tm-course-add{
     flex:0 0 auto;
     padding:0.6rem 1rem;
-    border-radius:999px; /* pill button */
+    border-radius:999px;
     white-space:nowrap;
 }
 
@@ -224,7 +224,6 @@
     border-radius: 999px;
 }
 
-/* Add module form (inline inside tutor card) */
 .tm-addbox {
     margin-top: 0.9rem;
     background: #ffffff;
@@ -275,7 +274,6 @@
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.16);
 }
 
-/* Analytics report (optional, keep) */
 .tm-report {
     margin-top: 1rem;
     background: #ffffff;

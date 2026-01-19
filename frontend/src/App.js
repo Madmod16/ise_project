@@ -18,12 +18,12 @@ function HomeRedirect() {
     const [seedMsg, setSeedMsg] = useState("");
 
     const handleMigrateDB = async () => {
-    try {
-        await axios.get("http://localhost:3001/mongodb/migrateAll");
-        alert("Database migrated successfully!");
+        try {
+            await axios.get("http://localhost:3001/mongodb/migrateAll");
+            alert("Database migrated successfully!");
         } catch (error) {
-        console.error("Migration failed:", error);
-        alert("Migration failed. Check console for details.");
+            console.error("Migration failed:", error);
+            alert("Migration failed. Check console for details.");
         }
     };
 
@@ -55,82 +55,100 @@ function HomeRedirect() {
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "center",
-                gap: "1.25rem",
-                background: "#f9fafb",
+                background: "#e3f2fd",
+                position: "relative", // Needed to anchor the absolute div
                 padding: "2rem",
+                fontFamily: "sans-serif"
             }}
         >
-            <h1 style={{ margin: 0, fontSize: "2rem" }}>Home</h1>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            {/* Utility Buttons shifted to Upper Right */}
+            <div style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: "0.75rem"
+            }}>
                 <button
                     type="button"
                     onClick={runSeed}
                     disabled={seeding}
                     style={{
-                        padding: "0.9rem 1.4rem",
+                        padding: "0.7rem 1.2rem",
                         borderRadius: "10px",
-                        border: "1px solid #d1d5db",
+                        border: "none",
                         background: "#111827",
                         color: "white",
-                        cursor: seeding ? "not-allowed" : "pointer",
-                        minWidth: "260px",
-                        opacity: seeding ? 0.1 : 1,
+                        cursor: "pointer",
+                        minWidth: "200px",
+                        fontSize: "0.9rem"
                     }}
                 >
                     {seeding ? "Importing..." : "Import Random Data"}
-                </button>
-
-                {seedMsg && <div style={{ fontSize: "0.95rem" }}>{seedMsg}</div>}
-            </div>
-
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1rem" }}>
-                <button
-                    type="button"
-                    onClick={() => navigate("/TutorModuleUseCase")}
-                    style={{
-                        padding: "0.9rem 1.4rem",
-                        borderRadius: "10px",
-                        border: "1px solid #d1d5db",
-                        background: "#2563eb",
-                        color: "white",
-                        cursor: "pointer",
-                        minWidth: "260px",
-                    }}
-                >
-                    Tutor Module Use Case
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() => navigate("/SelectTheUser")}
-                    style={{
-                        padding: "0.9rem 1.4rem",
-                        borderRadius: "10px",
-                        border: "1px solid #d1d5db",
-                        background: "#e5e7eb",
-                        color: "#111827",
-                        cursor: "pointer",
-                        minWidth: "260px",
-                    }}
-                >
-                    Select The User
                 </button>
 
                 <button
                     type="button"
                     onClick={handleMigrateDB}
                     style={{
-                        padding: "0.9rem 1.4rem",
+                        padding: "0.7rem 1.2rem",
                         borderRadius: "10px",
-                        border: "1px solid #d1d5db",
-                        background: "#0ed57f",
-                        color: "#111827",
+                        border: "none",
+                        background: "#111827",
+                        color: "white",
                         cursor: "pointer",
-                        minWidth: "260px",
+                        minWidth: "200px",
+                        fontSize: "0.9rem"
                     }}
                 >
-                    MigrateDB
+                    Migrate to NoSQL
+                </button>
+                {seedMsg && <div style={{ fontSize: "0.85rem", color: "#111827" }}>{seedMsg}</div>}
+            </div>
+
+            {/* Main Title */}
+            <h1 style={{ margin: "0 0 1.5rem 0", fontSize: "3rem" }}>Home</h1>
+
+            {/* Selection Buttons */}
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem"
+            }}>
+                <button
+                    type="button"
+                    onClick={() => navigate("/SelectTheUser")}
+                    style={{
+                        padding: "1rem 2rem",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#3b66f5",
+                        color: "white",
+                        cursor: "pointer",
+                        minWidth: "280px",
+                        fontSize: "1.1rem"
+                    }}
+                >
+                    Select User
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => navigate("/TutorModuleUseCase")}
+                    style={{
+                        padding: "1rem 2rem",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#3b66f5",
+                        color: "white",
+                        cursor: "pointer",
+                        minWidth: "280px",
+                        fontSize: "1.1rem"
+                    }}
+                >
+                    Select Tutor
                 </button>
             </div>
         </div>
