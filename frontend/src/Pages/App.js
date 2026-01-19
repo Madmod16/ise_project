@@ -1,10 +1,10 @@
-import "./App.css";
+import "../PagesCSS/App.css";
 import axios from "axios";
 
-import SelectTheUser from "./Pages/SelectTheUser";
-import CoursesList from "./Pages/CoursesList";
-import TutorModuleUseCase from "./UseCase2";
-import AnalyticsReportStudent1 from "./Pages/AnalyticReportStudent1";
+import SelectTheUser from "./SelectTheUser";
+import CoursesList from "./CoursesList";
+import UseCase2 from "./UseCase2";
+import AnalyticsReportStudent1 from "./AnalyticReportStudent1";
 
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -56,12 +56,11 @@ function HomeRedirect() {
                 justifyContent: "center",
                 alignItems: "center",
                 background: "#e3f2fd",
-                position: "relative", // Needed to anchor the absolute div
+                position: "relative",
                 padding: "2rem",
                 fontFamily: "sans-serif"
             }}
         >
-            {/* Utility Buttons shifted to Upper Right */}
             <div style={{
                 position: "absolute",
                 top: "20px",
@@ -136,7 +135,7 @@ function HomeRedirect() {
 
                 <button
                     type="button"
-                    onClick={() => navigate("/TutorModuleUseCase")}
+                    onClick={() => navigate("/UseCase2")}
                     style={{
                         padding: "1rem 2rem",
                         borderRadius: "10px",
@@ -162,7 +161,7 @@ function App() {
                 <Route path="/" element={<HomeRedirect />} />
                 <Route path="/SelectTheUser" element={<SelectTheUser />} />
                 <Route path="/CoursesList" element={<CoursesList />} />
-                <Route path="/TutorModuleUseCase" element={<TutorModuleUseCase />} />
+                <Route path="/UseCase2" element={<UseCase2 />} />
                 <Route path="/AnalyticsReportStudent1" element={<AnalyticsReportStudent1 />} />
             </Routes>
         </BrowserRouter>
