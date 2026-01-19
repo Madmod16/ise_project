@@ -235,7 +235,6 @@ const migrateCourses = async () =>{
         if(course.Modules){
             course.Modules.forEach((module) => {
                 mongo_courses[course.Id].Modules.push({
-                    _id : module.ModuleId,
                     name : module.Name,
                     subject : module.Subject
                 })
