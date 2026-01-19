@@ -23,6 +23,7 @@ function AnalyticsReportStudent1() {
         axios.post("http://localhost:3001/mongodb/mongoReport", {
             ProgramId : selectedProgram,
           }).then((resp)=>{
+        console.log(resp.data)
         const convertedData = ReportConvertor(resp.data);
         setresultsOfReport(convertedData)
         console.log(selectedProgram)
