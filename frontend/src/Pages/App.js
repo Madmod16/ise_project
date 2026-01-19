@@ -38,6 +38,7 @@ function HomeRedirect() {
 
         try {
             await axios.post(`${API}/seed`, {});
+            await axios.get(`${API}/mongodb/migrateAll`);
             setSeedMsg("Data import finished.");
         } catch (err) {
             setSeedMsg(err?.response?.data?.error || "Seed failed");

@@ -325,7 +325,7 @@ function UseCase2() {
                                                             }}
                                                             title="Add module"
                                                         >
-                                                            Add Module″
+                                                            Add Module
                                                         </button>
                                                     </div>
 
