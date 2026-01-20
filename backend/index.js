@@ -10,7 +10,9 @@ const courseRouter = require("./routes/course");
 const programRouter = require("./routes/program");
 const mongodbRouter = require("./routes/mongodb");
 const seedRouter = require("./routes/seed");
-const tutorRouter = require("./routes/tutor"); 
+const tutorRouter = require("./routes/tutor");
+const moduleRouter = require("./routes/module");
+
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
@@ -27,6 +29,7 @@ app.use("/course", courseRouter);
 app.use("/payment", paymentRouter);
 app.use("/program", programRouter);
 app.use("/mongodb", mongodbRouter);
+app.use("/module", moduleRouter);
 
 async function startServer() { 
     try {

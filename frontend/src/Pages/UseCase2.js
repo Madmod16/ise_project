@@ -187,7 +187,7 @@ function UseCase2() {
     };
 
     const fetchReport = async (tutorId, courseId) => {
-        const endpoint = noSQLMode ? `${API}/mongodb/modules/report` : `${API}/modules/report`;
+        const endpoint = noSQLMode ? `${API}/mongodb/modules/report` : `${API}/module/report`;
         const reportResp = await axios.post(endpoint, { tutorId, courseId });
         setReportRows(reportResp.data || []);
     };
@@ -198,7 +198,7 @@ function UseCase2() {
             return;
         }
 
-        const endpoint = noSQLMode ? `${API}/mongodb/modules` : `${API}/modules`;
+        const endpoint = noSQLMode ? `${API}/mongodb/modules` : `${API}/module`;
 
         const tutorId = String(activeTutor.Id || activeTutor._id || activeTutorId);
         const courseId = String(
