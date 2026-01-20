@@ -28,7 +28,7 @@ const addModuleToCourse = async (req, res) => {
         }
 
         const next = await sequelize.query(
-            `SELECT COALESCE(MAX(Id), 0) + 1 AS nextId
+            `SELECT COALESCE(MAX(ModuleId), 0) + 1 AS nextId
              FROM Module
              WHERE CourseId = :courseId`,
             { replacements: { courseId }, type: QueryTypes.SELECT }
@@ -38,7 +38,7 @@ const addModuleToCourse = async (req, res) => {
 
         // INSERT-Operation
         await sequelize.query(
-            `INSERT INTO Module (CourseId, Id, Name, Subject)
+            `INSERT INTO Module (CourseId, ModuleId, Name, Subject)
              VALUES (:courseId, :moduleId, :name, :subject)`,
             { replacements: { courseId, moduleId, name, subject }, type: QueryTypes.INSERT }
         );
@@ -68,7 +68,7 @@ const getModulesReport = async (req, res) => {
                  t.Surname AS TutorSurname,
                  c.Id AS CourseId,
                  c.Name AS CourseName,
-                 m.Id AS ModuleId,
+                 m.ModuleId AS ModuleId,
                  m.Name AS ModuleName,
                  m.Subject AS ModuleSubject
              FROM Tutor t
@@ -77,7 +77,7 @@ const getModulesReport = async (req, res) => {
                       LEFT JOIN Module m ON m.CourseId = c.Id
              WHERE t.Id = :tutorId
                AND (:courseId IS NULL OR c.Id = :courseId)
-             ORDER BY c.Id, m.Id`,
+             ORDER BY c.Id, m.ModuleId`,
             { replacements: { tutorId, courseId }, type: QueryTypes.SELECT }
         );
 
