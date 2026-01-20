@@ -1,5 +1,5 @@
 const mongodb = require("mongodb")
-const url = "mongodb+srv://hriazinivan_db_user:160604@cluster0.5j4quiy.mongodb.net/?appName=Cluster0"
+const url = "mongodb+srv://user:password@cluster0.5j4quiy.mongodb.net/?appName=Cluster0" //connection string
 const client = new mongodb.MongoClient(url)
 let dbConnection
 

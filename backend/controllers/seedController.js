@@ -1,8 +1,6 @@
-// controllers/seedController.js
 const db = require("../models");
 const { sequelize } = db;
 
-/* -------------------- helpers -------------------- */
 const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -20,7 +18,6 @@ function makeIdGen() {
     return () => ++cur;
 }
 
-/* -------------------- pools -------------------- */
 const FIRST_POOL = ["Maria", "Stefan", "Elia", "Anna", "Lukas", "Nina", "Tobias", "Sara", "David", "Mila", "Paul", "Lea"];
 const LAST_POOL = ["Kadlec", "Hofer", "Gruber", "Mayer", "Huber", "Bauer", "Wagner", "Leitner", "Novak", "Schmid", "Fischer", "Berger"];
 
@@ -51,7 +48,6 @@ const MODULE_SUBJECTS_POOL = [
     "Advanced topics and patterns",
 ];
 
-/* -------------------- main seed -------------------- */
 async function seedOnStartupRandom({ reset = true } = {}) {
     const needed = [
         "Program",
@@ -62,7 +58,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
         "Member",
         "PrivateCustomer",
         "UniversityStudent",
-        // ❌ Enrollment, Payment entfernt
     ];
     const missing = needed.filter((n) => !db[n]);
     if (missing.length) {
@@ -94,7 +89,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
 
     const nextId = makeIdGen();
 
-    // Mengen (kannst du anpassen)
     const cfg = {
         programs: 2,
         courses: 4,
@@ -109,14 +103,12 @@ async function seedOnStartupRandom({ reset = true } = {}) {
     const t = await sequelize.transaction();
     try {
         if (reset) {
-            // Reihenfolge: Child -> Parent
             await IsTaughtBy.destroy({ where: {}, transaction: t });
             await UniversityStudent.destroy({ where: {}, transaction: t });
             await PrivateCustomer.destroy({ where: {}, transaction: t });
             await Member.destroy({ where: {}, transaction: t });
             await Module.destroy({ where: {}, transaction: t });
 
-            // Tutor Self-FK SupervisorId -> erst lösen, dann löschen
             await Tutor.update({ SupervisorId: null }, { where: {}, transaction: t });
             await Tutor.destroy({ where: {}, transaction: t });
 
@@ -124,7 +116,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             await Program.destroy({ where: {}, transaction: t });
         }
 
-        /* -------- Program -------- */
         const programIds = [];
         for (let i = 0; i < cfg.programs; i++) {
             const p = await Program.create(
@@ -138,7 +129,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             programIds.push(p.Id);
         }
 
-        /* -------- Course -------- */
         const courseIds = [];
         for (let i = 0; i < cfg.courses; i++) {
             const c = await Course.create(
@@ -154,7 +144,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             courseIds.push(c.Id);
         }
 
-        /* -------- Module (PK: CourseId + ModuleId) -------- */
         for (const cId of courseIds) {
             const count = randInt(cfg.modulesMin, cfg.modulesMax);
             for (let m = 1; m <= count; m++) {
@@ -170,7 +159,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             }
         }
 
-        /* -------- Tutor -------- */
         const tutorIds = [];
         for (let i = 0; i < cfg.tutors; i++) {
             const id = nextId();
@@ -190,7 +178,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             tutorIds.push(row.Id);
         }
 
-        /* -------- IsTaughtBy -------- */
         const pairs = new Set();
         for (const tId of tutorIds) {
             const howMany = randInt(1, Math.min(2, courseIds.length));
@@ -203,7 +190,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             }
         }
 
-        /* -------- Member -------- */
         const memberIds = [];
         for (let i = 0; i < cfg.members; i++) {
             const m = await Member.create(
@@ -218,7 +204,6 @@ async function seedOnStartupRandom({ reset = true } = {}) {
             memberIds.push(m.Id);
         }
 
-        /* -------- PrivateCustomer / UniversityStudent -------- */
         const shuffledMembers = shuffle(memberIds);
         const nPrivate = Math.floor(cfg.members * cfg.pctPrivate);
         const nStudent = Math.floor(cfg.members * cfg.pctStudent);
